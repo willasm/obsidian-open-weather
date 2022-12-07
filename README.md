@@ -62,15 +62,15 @@ These macros contained within the weather string will be replaced with the appro
 
   - `%wind-gust%` This data is only returned by the API if the condition exists. To make this data optional within your string you can surround it with underscores.
 
-  - For example: Winds %wind-speed% Km/h_ with gusts up to %wind-gust% Km/h_
+  - For example: `Winds %wind-speed% Km/h_ with gusts up to %wind-gust% Km/h_`
   - With wind gust data this will convert to: `Winds 10 Km/h with gusts up to 20 Km/h`
   - Without wind gust data this will convert to: `Winds 10 Km/h` (The gusts text surrounded by underscores will be removed)
 
 ## OpenWeather Plugin Commands
-- Insert weather format one - Inserts Weather Format String One into the current document.
-- Insert weather format two - Inserts Weather Format String Two into the current document.
-- Insert weather format three - Inserts Weather Format String Three into the current document.
-- Insert weather format four - Inserts Weather Format String Four into the current document.
+- `Insert weather format one` - Inserts Weather Format String One into the current document.
+- `Insert weather format two` - Inserts Weather Format String Two into the current document.
+- `Insert weather format three` - Inserts Weather Format String Three into the current document.
+- `Insert weather format four` - Inserts Weather Format String Four into the current document.
   - Note: If text is selected in the current document when these commands are run, it will be replaced by the inserted weather string.
-- Replace template string - This will replace all occurences of the strings, `%weather1%`, `%weather2%`, `%weather3%` and `%weather4%` with the corresponding defined weather strings. This command can be automatically run with the [Templater plugin](https://github.com/SilentVoid13/Templater) with the line `<%* app.commands.executeCommandById("obsidian-open-weather:replace-template-string")%>` placed within your template file.
+- `Replace template string` - This will replace all occurences of the strings, `%weather1%`, `%weather2%`, `%weather3%` and `%weather4%` with the corresponding defined weather strings. This command can be automatically run with the [Templater plugin](https://github.com/SilentVoid13/Templater) with the line `<%* app.commands.executeCommandById("obsidian-open-weather:replace-template-string")%>` placed within your template file.
 
