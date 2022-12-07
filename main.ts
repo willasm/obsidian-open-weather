@@ -226,7 +226,7 @@ class FormatWeather {
   // • getWeatherString - Returns a formatted weather string • 
   async getWeatherString() {
     let weatherString = await this.getWeather();
-    console.log('Weather String:', weatherString);
+    //console.log('Weather String:', weatherString);
     return weatherString;
   }
 
@@ -298,6 +298,47 @@ export default class OpenWeather extends Plugin {
           editor.replaceSelection(`${weatherStr}`);
         } else {
           new Notice('Weather string 1 is undefined! Please add a definition for it in the OpenWeather plugin settings.', 5000);
+        }
+      }
+    });
+
+    // onload - Replace template string 
+    this.addCommand ({
+      id: 'replace-template-string',
+      name: 'Replace template string',
+      editorCallback: async (editor: Editor, view: MarkdownView) => {
+        if (this.settings.weatherFormat1.length > 0) {
+          if (view.data.contains("%weather1%")) {
+            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+            let weatherStr = await wstr.getWeatherString();
+            let doc = editor.getValue().replace(/%weather1%/gm, (match) => weatherStr);
+            editor.setValue(doc);
+            //console.log('Doc: ',doc);
+          }
+        }
+        if (this.settings.weatherFormat2.length > 0) {
+          if (view.data.contains("%weather2%")) {
+            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+            let weatherStr = await wstr.getWeatherString();
+            let doc = editor.getValue().replace(/%weather2%/gm, (match) => weatherStr);
+            editor.setValue(doc);
+          }
+        }
+        if (this.settings.weatherFormat3.length > 0) {
+          if (view.data.contains("%weather3%")) {
+            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+            let weatherStr = await wstr.getWeatherString();
+            let doc = editor.getValue().replace(/%weather3%/gm, (match) => weatherStr);
+            editor.setValue(doc);
+          }
+        }
+        if (this.settings.weatherFormat4.length > 0) {
+          if (view.data.contains("%weather4%")) {
+            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+            let weatherStr = await wstr.getWeatherString();
+            let doc = editor.getValue().replace(/%weather4%/gm, (match) => weatherStr);
+            editor.setValue(doc);
+          }
         }
       }
     });
@@ -473,7 +514,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         .setPlaceholder('Enter city Eg. edmonton')
         .setValue(this.plugin.settings.location)
         .onChange(async (value) => {
-          console.log('Location: ' + value);
+          //console.log('Location: ' + value);
           this.plugin.settings.location = value;
           await this.plugin.saveSettings();
       }));
@@ -485,7 +526,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         .setPlaceholder('Enter OpenWeather API Key')
         .setValue(this.plugin.settings.key)
         .onChange(async (value) => {
-          console.log('OpenWeather API Key: ' + value);
+          //console.log('OpenWeather API Key: ' + value);
           this.plugin.settings.key = value;
           await this.plugin.saveSettings();
       }));
@@ -611,7 +652,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         dropDown.addOption('30', 'Every 30 Minutes');
         dropDown.addOption('60', 'Every Hour');
         dropDown.onChange(async (value) => {
-          console.log('Statusbar Update Frequency: ' + value);
+          //console.log('Statusbar Update Frequency: ' + value);
           this.plugin.settings.statusbarUpdateFreq = value;
           await this.plugin.saveSettings();
           this.plugin.updateWeather();
