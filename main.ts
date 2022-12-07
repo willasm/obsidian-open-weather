@@ -532,7 +532,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       }));
 
     new Setting(containerEl)
-      .setName("Units of measurement")
+      .setName("Units of Measurement")
       .setDesc("Units of measurement. Standard, Metric and Imperial units are available")
       .addDropdown(dropDown => {
         dropDown.addOption('standard', 'Standard');

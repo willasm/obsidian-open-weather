@@ -1,73 +1,76 @@
-# Obsidian Sample Plugin
+# OpenWeather Plugin fo Obsidian
+This is a work in progress plugin.
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+## Settings
+**Enter Location** - Enter your city's name (Required)
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+**OpenWeather API Key** - Enter your OpenWeather API Key here (Required)
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+_A free OpenWeather API key is required for the plugin to work.
+Go to https://openweathermap.org to register and get a key._
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+**Units of Measurement** - Standard, Metric and Imperial units can be selected here. (Note: Standard is in Kelvin, not really useful in most cases)
 
-## First time developing plugins?
+**Weather Strings Formatting** - Define your weather strings here (Up to 4 strings are available)
 
-Quick starting guide for new plugin devs:
+_Tip: These strings can contain anything you want, not just weather information._
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+**Show Weather in Statusbar** - Toggle display of the current weather in the statusbar on or off
 
-## Releasing new releases
+**Weather String Format Statusbar** - Define your statusbar weather string here
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+**Update Frequency** - Time interval to update the weather displayed in the statusbar (1, 5, 10, 15, 20, 30 or 60 minutes)
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## Weather String Placeholders
+These macros contained within the weather string will be replaced with the appropiate data.
 
-## Adding your plugin to the community plugin list
+- Weather Description `%desc%`
+- Weather Icon `%icon%` - See note below
+- Current Temperature `%temp%`
+- Feels Like `%feels%`
+- Temperature Min `%tempmin%`
+- Temperature Max `%tempmax%`
+- Air Pressure `%pressure%`
+- Humidity `%humidity%`
+- Pressure at Sea Level `%pressure-sl%`
+- Pressure at Ground Level `%pressure-gl%`
+- Visibility `%visibility%`
+- Wind Speed `%wind-speed%` - Km/h for Metric, Mp/h for Imperial
+- Wind Direction `%wind-dir%` - Eg. Northwest
+- Wind Gust `%wind-gust%` - See note below
+- Sunrise `%sunrise%` - 08:30:30 (24 hour format)
+- Sunset `%sunset%` - 19:30:30 (24 hour format)
+- City Name `%name%` - Eg. Edmonton
+- (Date & Time) - The date & time of the most recent data information that OpenWeather API has available
+  - year1 `%dateYear1%` - 2022
+  - year2 `%dateYear2%` - 22
+  - month1 `%dateMonth1%` - 1
+  - month2 `%dateMonth2%` - 01
+  - month3 `%dateMonth3%` - Jan
+  - month4 `%dateMonth4%` - January
+  - date1 `%dateDay1%` - 02
+  - date2 `%dateDay2%` - 2
+  - ampm1 `%ampm1%` = "AM"
+  - ampm2 `%ampm2%` = "am"
+  - hour1 `%timeH1%` - 23 (24 hour)
+  - hour2 `%timeH2%` - 1 (12 hour)
+  - min `%timeM%` - 05
+  - sec `%timeS%` - 05
 
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+- ### Weather Placeholder notes
+  - `%Icon%` - This is replaced with the image tag `<img src={Icon Url} />` This is more useful if it is embedded inside a `div` block.
 
-## How to use
+  - `%wind-gust%` This data is only returned by the API if the condition exists. To make this data optional within your string you can surround it with underscores.
 
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
+  - For example: Winds %wind-speed% Km/h_ with gusts up to %wind-gust% Km/h_
+  - With wind gust data this will convert to: `Winds 10 Km/h with gusts up to 20 Km/h`
+  - Without wind gust data this will convert to: `Winds 10 Km/h` (The gusts text surrounded by underscores will be removed)
 
-## Manually installing the plugin
+## OpenWeather Plugin Commands
+- Insert weather format one - Inserts Weather Format String One into the current document.
+- Insert weather format two - Inserts Weather Format String Two into the current document.
+- Insert weather format three - Inserts Weather Format String Three into the current document.
+- Insert weather format four - Inserts Weather Format String Four into the current document.
+  - Note: If text is selected in the current document when these commands are run, it will be replaced by the inserted weather string.
+- Replace template string - This will replace all occurences of the strings, `%weather1%`, `%weather2%`, `%weather3%` and `%weather4%` with the corresponding defined weather strings. This command can be automatically run with the [Templater plugin](https://github.com/SilentVoid13/Templater) with the line `<%* app.commands.executeCommandById("obsidian-open-weather:replace-template-string")%>` placed within your template file.
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
-
-
-## API Documentation
-
-See https://github.com/obsidianmd/obsidian-api
