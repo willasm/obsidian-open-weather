@@ -429,8 +429,11 @@ class SampleModal extends Modal {
   // • onOpen - Sample Modal Opened Event • 
   onOpen() {
     const {contentEl} = this;
-    contentEl.setText('Woah!');
-//    contentEl.createDiv({title: "Hover Test", text: "Blah"})
+    //contentEl.setText('Woah!');
+    contentEl.createEl('h2', {text: "Select Weather Format String to Insert"});
+    contentEl.createEl('hr');
+    contentEl.createEl('h3', {text: "Weather format one"});
+    contentEl.createEl("button", {text: "Insert"});
       
   }
 
