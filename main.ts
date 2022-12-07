@@ -24,7 +24,7 @@ const DEFAULT_SETTINGS: OpenWeatherSettings = {
   weatherFormat4: '',
   statusbarActive: true,
   weatherFormatSB: ' 🔸 Weather Updated: %dateMonth3% %dateDay2% - %timeH2%:%timeM% %ampm1% 🔸 %desc% 🔸  🌡 %temp%°C 🔸 Feels Like: %feels%°C 🔸 Wind: %wind-speed% Km/h from the %wind-dir%_ with gusts up to %wind-gust% Km/h_ 🔸 ',
-  statusbarUpdateFreq: "Every 15 Minutes"
+  statusbarUpdateFreq: "15"
 }
 
 //  ╭──────────────────────────────────────────────────────────────────────────────╮
@@ -226,6 +226,7 @@ class FormatWeather {
   // • getWeatherString - Returns a formatted weather string • 
   async getWeatherString() {
     let weatherString = await this.getWeather();
+    console.log('Weather String:', weatherString);
     return weatherString;
   }
 
@@ -265,9 +266,14 @@ export default class OpenWeather extends Plugin {
     this.statusBar = this.addStatusBarItem();
     // this.updateStatusBar();
     if (this.settings.statusbarActive) {
-      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
-      let weatherStr = await wstr.getWeatherString();
-      this.statusBar.setText(weatherStr);
+      if (this.settings.key.length == 0 || this.settings.location.length == 0) {
+        new Notice("OpenWeather plugin settings are undefined.")
+        this.statusBar.setText('');
+      } else {
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
+        let weatherStr = await wstr.getWeatherString();
+        this.statusBar.setText(weatherStr);
+      }
     } else {
       this.statusBar.setText('');
     }
@@ -380,9 +386,14 @@ export default class OpenWeather extends Plugin {
   // updateWeather - Get weather information from OpenWeather API 
   async updateWeather() {
     if (this.settings.statusbarActive) {
-      let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
-      let weatherStr = await wstr.getWeatherString();
-      this.statusBar.setText(weatherStr);
+      if (this.settings.key.length == 0 || this.settings.location.length == 0) {
+        new Notice("OpenWeather plugin settings are undefined.")
+        this.statusBar.setText('');
+      } else {
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
+        let weatherStr = await wstr.getWeatherString();
+        this.statusBar.setText(weatherStr);
+      }
     } else {
       this.statusBar.setText('');
     }
@@ -419,7 +430,10 @@ class SampleModal extends Modal {
   onOpen() {
     const {contentEl} = this;
     contentEl.setText('Woah!');
+//    contentEl.createDiv({title: "Hover Test", text: "Blah"})
+      
   }
+
 
   // • onClose - Sample Modal Closed Event • 
   onClose() {
@@ -481,7 +495,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         dropDown.addOption('metric', 'Metric');
         dropDown.addOption('imperial', 'Imperial');
         dropDown.onChange(async (value) => {
-          console.log('Units of measurement: ' + value);
+          //console.log('Units of measurement: ' + value);
           this.plugin.settings.units = value;
           await this.plugin.saveSettings();
         })
