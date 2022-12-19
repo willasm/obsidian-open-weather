@@ -1,5 +1,7 @@
 import { Console } from 'console';
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent } from 'obsidian';
+import { link } from 'fs';
+import { Settings } from 'http2';
+import { App, Editor, MarkdownView, MarkdownPreviewRenderer, MarkdownPostProcessor, Modal, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent, TFile, Vault, TFolder, SuggestModal } from 'obsidian';
 
 interface OpenWeatherSettings {
   location: string;
@@ -177,8 +179,10 @@ class FormatWeather {
     }
   }catch(e){
     console.error(e);
-    console.log("Error encountered getting weather...")
+    console.log("OpenWeather Plugin: Error encountered getting weather...")
     weatherData = {"status": "Error encountered getting weather..."};
+    //weatherString = "Error encountered getting weather..."};
+    //return weatherString;
   }
 
     // getWeather - Create Formatted weather string 
@@ -220,6 +224,10 @@ class FormatWeather {
     weatherString = weatherString.replace(/%name%/g, `${weatherData.name}`);
 
     // getWeather - Return the weather data object 
+    if (weatherData.status === "ok"){
+      return weatherString;
+    }
+    weatherString = "OpenWeather Plugin: Error encountered getting weather...";
     return weatherString;
   }
 
@@ -247,6 +255,12 @@ export default class OpenWeather extends Plugin {
   settings: OpenWeatherSettings;
   statusBar: HTMLElement;
   divEl: HTMLElement;
+  newFileNamePath: String;
+  createdFile = false;
+  openedFile = false;
+  changedFile = false;
+  resolvedFile = false;
+  fileName = '';
 
   // • onload - Configure resources needed by the plugin • 
   async onload() {
@@ -257,7 +271,22 @@ export default class OpenWeather extends Plugin {
     // onload - This creates an icon in the left ribbon 
     const ribbonIconEl = this.addRibbonIcon('thermometer-snowflake', 'OpenWeather', (evt: MouseEvent) => {
       // Called when the user clicks the icon.
-      new Notice('This is a notice!');
+      const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      if (!view) {
+        new Notice("Open a Markdown file first.");
+        return;
+      }
+      //console.log('Filename:',view.file.basename);
+      if (view.getViewType() === 'markdown') {
+        const md = view as MarkdownView;
+        if (md.getMode() === 'source') {
+          new InsertWeatherPicker(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
+        } else {
+          new Notice("Markdown file must be in source mode to insert weather string.")
+        }
+      } else {
+        new Notice("Open a Markdown file first.")
+      }
     });
     // Perform additional things with the ribbon
     ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -278,35 +307,12 @@ export default class OpenWeather extends Plugin {
       this.statusBar.setText('');
     }
 
-    // onload - This adds a simple command that can be triggered anywhere 
-    this.addCommand({
-      id: 'open-sample-modal-simple',
-      name: 'Open sample modal (simple)',
-      callback: () => {
-        new SampleModal(this.app).open();
-      }
-    });
-
-    // onload - Insert weather format one string 
-    this.addCommand ({
-      id: 'insert-format-one',
-      name: 'Insert weather format one',
-      editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
-          let weatherStr = await wstr.getWeatherString();
-          editor.replaceSelection(`${weatherStr}`);
-        } else {
-          new Notice('Weather string 1 is undefined! Please add a definition for it in the OpenWeather plugin settings.', 5000);
-        }
-      }
-    });
-
-    // onload - Replace template string 
+    // onload - Replace template strings 
     this.addCommand ({
       id: 'replace-template-string',
-      name: 'Replace template string',
+      name: 'Replace template strings',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
+        //console.log('Editor: ',editor,'View: ',view)
         if (this.settings.weatherFormat1.length > 0) {
           if (view.data.contains("%weather1%")) {
             let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
@@ -339,6 +345,21 @@ export default class OpenWeather extends Plugin {
             let doc = editor.getValue().replace(/%weather4%/gm, (match) => weatherStr);
             editor.setValue(doc);
           }
+        }
+      }
+    });
+
+    // onload - Insert weather format one string 
+    this.addCommand ({
+      id: 'insert-format-one',
+      name: 'Insert weather format one',
+      editorCallback: async (editor: Editor, view: MarkdownView) => {
+        if (this.settings.weatherFormat1.length > 0) {
+          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+          let weatherStr = await wstr.getWeatherString();
+          editor.replaceSelection(`${weatherStr}`);
+        } else {
+          new Notice('Weather string 1 is undefined! Please add a definition for it in the OpenWeather plugin settings.', 5000);
         }
       }
     });
@@ -388,43 +409,173 @@ export default class OpenWeather extends Plugin {
       }
     });
 
-    // onload - This adds a complex command that can check whether the current state of the app allows execution of the command 
-    this.addCommand({
-      id: 'open-sample-modal-complex',
-      name: 'Open sample modal (complex)',
-      checkCallback: (checking: boolean) => {
-        // Conditions to check
-        const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (markdownView) {
-          // If checking is true, we're simply "checking" if the command can be run.
-          // If checking is false, then we want to actually perform the operation.
-          if (!checking) {
-            new SampleModal(this.app).open();
-          }
-
-          // This command will only show up in Command Palette when the check function returns true
-          return true;
-        }
-      }
-    });
-
     // onload - This adds a settings tab so the user can configure various aspects of the plugin 
     this.addSettingTab(new OpenWeatherSettingsTab(this.app, this));
 
-    // onload - If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin) 
-    // Using this function will automatically remove the event listener when this plugin is disabled
-    // this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-    //   console.log('click', evt);
-    // });
+    // onload - registerEvent - 'create' 
+    this.registerEvent(this.app.vault.on('create', async (file) => {
+      this.newFileNamePath = "";
+      if (file instanceof TFolder) {
+        //console.log('Folder Created:', file.path);
+        return;
+      }
+      //console.log('File Created:', file.path);
+      this.newFileNamePath = file.path;
+    }));
+
+    // onload - registerEvent - 'rename' 
+    this.registerEvent(this.app.vault.on('rename', async (file, oldPath) => {
+      if (file instanceof TFolder) {
+        //console.log('Folder Renamed:', file.path);
+        //console.log('Folder Renamed Oldpath:', oldPath);
+        return;
+      }
+      if (oldPath == this.newFileNamePath) {
+        //console.log('File Renamed:', file.path);
+        //console.log('File Renamed Oldpath:', oldPath);
+        this.newFileNamePath = file.path;
+      } else {
+        return;
+      }
+      //await this.updateCurrentWeatherDiv();
+    }));
+
+    // onload - registerEvent - 'modify' 
+    this.registerEvent(this.app.vault.on('modify', async (file) => {
+      if (file instanceof TFolder) {
+        //console.log('Folder Modified:', file.path);
+        return;
+      }
+      if (file.path == this.newFileNamePath) {
+        //console.log('File Modified:', file.path);
+        this.newFileNamePath = "";
+        await new Promise(r => setTimeout(r, 1000));    // Wait for Templater to do its thing
+        await this.replaceTemplateStrings();
+        await this.updateCurrentWeatherDiv();
+      }
+    }));
+
+    // onload - registerEvent - 'file-open' 
+    this.registerEvent(this.app.workspace.on('file-open', async (file) => {
+      if (file) {
+        //console.log('File Opened:',file.name);
+        await new Promise(r => setTimeout(r, 1000));
+        await this.updateCurrentWeatherDiv();
+      }
+    }));
+
+    // onload - registerEvent - 'changed' 
+    // this.registerEvent(this.app.metadataCache.on('changed', async (file) => {
+    //   console.log('File Changed:', file.name);
+    //   //await this.updateCurrentWeatherDiv();
+    // }));
+
+    // onload - registerEvent - 'resolved' 
+    // this.registerEvent(this.app.metadataCache.on('resolved', async () => {
+    //   console.log('Resolved:');
+    //   this.updateCurrentWeatherDiv();
+    // }));
+
+    // onload - Register layout change event handler 
+		this.registerEvent(this.app.workspace.on('layout-change', async () => {
+      //console.log('Layout Changed:');
+      await new Promise(r => setTimeout(r, 2000));
+      this.updateCurrentWeatherDiv();
+    }));
 
     // onload - When registering intervals, this function will automatically clear the interval when the plugin is disabled 
     let updateFreq = this.settings.statusbarUpdateFreq;
     //console.log('Upd Freq:', updateFreq);
     this.registerInterval(window.setInterval(() => this.updateWeather(), Number(updateFreq) * 60 * 1000));
-
+    this.registerInterval(window.setInterval(() => this.updateCurrentWeatherDiv(), Number(updateFreq) * 60 * 1000));
+    
   }
 
-  // updateWeather - Get weather information from OpenWeather API 
+  // • updateCurrentWeatherDiv - Update DIV's with current weather • 
+  async updateCurrentWeatherDiv() {
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) return;
+    //console.log('Filename:',view.file.basename);
+    if (view.getViewType() === 'markdown') {
+      //console.log('View Type:', view.getViewType());
+      const md = view as MarkdownView;
+      //console.log('Mode:', mode);
+      if (md.getMode() === 'preview') {
+        if(document.getElementsByClassName('weather_current_1').length === 1) {
+          const divEl = document.getElementsByClassName('weather_current_1')[0];
+          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+          let weatherStr = await wstr.getWeatherString();
+          divEl.innerHTML = weatherStr;
+          //console.log('--==Updating Weather One==--');
+        }
+        if(document.getElementsByClassName('weather_current_2').length === 1) {
+          const divEl = document.getElementsByClassName('weather_current_2')[0];
+          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+          let weatherStr = await wstr.getWeatherString();
+          divEl.innerHTML = weatherStr;
+          //console.log('--==Updating Weather Two==--');
+        }
+        if(document.getElementsByClassName('weather_current_3').length === 1) {
+          const divEl = document.getElementsByClassName('weather_current_3')[0];
+          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+          let weatherStr = await wstr.getWeatherString();
+          divEl.innerHTML = weatherStr;
+          //console.log('--==Updating Weather Three==--');
+        }
+        if(document.getElementsByClassName('weather_current_4').length === 1) {
+          const divEl = document.getElementsByClassName('weather_current_4')[0];
+          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+          let weatherStr = await wstr.getWeatherString();
+          divEl.innerHTML = weatherStr;
+          //console.log('--==Updating Weather Four==--');
+        }
+      }
+    }
+  }
+      
+  // • replaceTemplateStrings - Replace any template strings in current file • 
+  async replaceTemplateStrings() {
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) return;
+    if (view.file.parent.path === 'Templates') return;    // TODO: Add this to settings Ignore this folder
+    let editor = view.getViewData();
+    if (editor == null) return;
+    if (this.settings.weatherFormat1.length > 0) {
+      if (editor.contains("%weather1%")) {
+        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+        let weatherStr = await wstr.getWeatherString();
+        editor = editor.replace(/%weather1%/gmi, (match) => weatherStr);
+        view.setViewData(editor,false);
+      }
+    }
+    if (this.settings.weatherFormat2.length > 0) {
+      if (editor.contains("%weather2%")) {
+        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+        let weatherStr = await wstr.getWeatherString();
+        editor = editor.replace(/%weather2%/gmi, (match) => weatherStr);
+        view.setViewData(editor,false);
+      }
+    }
+    if (this.settings.weatherFormat3.length > 0) {
+      if (editor.contains("%weather3%")) {
+        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+        let weatherStr = await wstr.getWeatherString();
+        editor = editor.replace(/%weather3%/gmi, (match) => weatherStr);
+        view.setViewData(editor,false);
+      }
+    }
+    if (this.settings.weatherFormat4.length > 0) {
+      if (editor.contains("%weather4%")) {
+        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+        let weatherStr = await wstr.getWeatherString();
+        editor = editor.replace(/%weather4%/gmi, (match) => weatherStr);
+        view.setViewData(editor,false);
+        //console.log('Document: ',editor);
+      }
+    }
+  }
+
+  // • updateWeather - Get weather information from OpenWeather API • 
   async updateWeather() {
     if (this.settings.statusbarActive) {
       if (this.settings.key.length == 0 || this.settings.location.length == 0) {
@@ -457,32 +608,112 @@ export default class OpenWeather extends Plugin {
 }
 
 //  ╭──────────────────────────────────────────────────────────────────────────────╮
-//  │                            ● Class SampleModal ●                             │
+//  │                         ● Class InsertWeatherModal ●                         │
 //  │                                                                              │
-//  │                               • Sample Modal •                               │
+//  │             • Insert Weather or Replace Template Strings Modal •             │
 //  ╰──────────────────────────────────────────────────────────────────────────────╯
-class SampleModal extends Modal {
+interface Commands {
+  command: string;
+  format: string;
+}
 
-  constructor(app: App) {
+let ALL_COMMANDS: { command: string; format: string; }[] = [];
+
+class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherSettings{
+  location: string;
+  key: string;
+  units: string;
+  weatherFormat1: string;
+  weatherFormat2: string;
+  weatherFormat3: string;
+  weatherFormat4: string;
+  statusbarActive: boolean;
+  weatherFormatSB: string;
+  statusbarUpdateFreq: string;
+  plugin: OpenWeather
+  command: string;
+  format: string;
+
+  constructor(location: string, key: string, units: string, weatherFormat1: string, weatherFormat2: string, weatherFormat3: string, weatherFormat4: string) {
     super(app);
+    this.location = location;
+    this.key = key;
+    this.units = units;
+    this.weatherFormat1 = weatherFormat1;
+    this.weatherFormat2 = weatherFormat2;
+    this.weatherFormat3 = weatherFormat3;
+    this.weatherFormat4 = weatherFormat4;
   }
 
-  // • onOpen - Sample Modal Opened Event • 
-  onOpen() {
-    const {contentEl} = this;
-    //contentEl.setText('Woah!');
-    contentEl.createEl('h2', {text: "Select Weather Format String to Insert"});
-    contentEl.createEl('hr');
-    contentEl.createEl('h3', {text: "Weather format one"});
-    contentEl.createEl("button", {text: "Insert"});
-      
+  async getSuggestions(query: string): Promise<Commands[]> {
+    ALL_COMMANDS = [];
+    if (this.weatherFormat1.length > 0) {
+      let wstr = new FormatWeather (this.location, this.key, this.units, this.weatherFormat1);
+      let weatherStr = await wstr.getWeatherString();
+      this.weatherFormat1 = weatherStr;
+      ALL_COMMANDS.push({command: "Insert Weather String - Format 1", format: this.weatherFormat1})
+    }
+    if (this.weatherFormat2.length > 0) {
+      let wstr = new FormatWeather (this.location, this.key, this.units, this.weatherFormat2);
+      let weatherStr = await wstr.getWeatherString();
+      this.weatherFormat2 = weatherStr;
+      ALL_COMMANDS.push({command: "Insert Weather String - Format 2", format: this.weatherFormat2})
+    }
+    if (this.weatherFormat3.length > 0) {
+      let wstr = new FormatWeather (this.location, this.key, this.units, this.weatherFormat3);
+      let weatherStr = await wstr.getWeatherString();
+      this.weatherFormat3 = weatherStr;
+      ALL_COMMANDS.push({command: "Insert Weather String - Format 3", format: this.weatherFormat3})
+    }
+    if (this.weatherFormat4.length > 0) {
+      let wstr = new FormatWeather (this.location, this.key, this.units, this.weatherFormat4);
+      let weatherStr = await wstr.getWeatherString();
+      this.weatherFormat4 = weatherStr;
+      ALL_COMMANDS.push({command: "Insert Weather String - Format 4", format: this.weatherFormat4})
+    }
+    ALL_COMMANDS.push({command: "Replace Template Strings", format: "Replace all occurences of %weather1%, %weather2%, %weather3% and %weather4%\nin the current document."})
+    return ALL_COMMANDS.filter((command) =>
+    command.command.toLowerCase().includes(query.toLowerCase())
+    );
   }
 
+  // Renders each suggestion item.
+  renderSuggestion(command: Commands, el: HTMLElement) {
+    el.createEl("div", { text: command.command });
+    el.createEl("small", { text: command.format });
+  }
 
-  // • onClose - Sample Modal Closed Event • 
-  onClose() {
-    const {contentEl} = this;
-    contentEl.empty();
+  // Perform action on the selected suggestion.
+  async onChooseSuggestion(command: Commands, evt: MouseEvent | KeyboardEvent) {
+    //new Notice(`Selected ${command.command}`);
+    this.command = command.command
+    this.format = command.format
+    this.close();
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!view) return;
+    if (view.file.parent.path === 'Templates') return;    // TODO: Add this to settings Ignore this folder
+    let editor = view.getViewData();
+    if (editor == null) return;
+    if (command.command == 'Replace Template Strings') {
+      if (this.weatherFormat1.length > 0) {
+        editor = editor.replace(/%weather1%/gmi, (match) => this.weatherFormat1);
+        view.setViewData(editor,false);
+      }
+      if (this.weatherFormat2.length > 0) {
+        editor = editor.replace(/%weather2%/gmi, (match) => this.weatherFormat2);
+        view.setViewData(editor,false);
+      }
+      if (this.weatherFormat3.length > 0) {
+        editor = editor.replace(/%weather3%/gmi, (match) => this.weatherFormat3);
+        view.setViewData(editor,false);
+      }
+      if (this.weatherFormat4.length > 0) {
+        editor = editor.replace(/%weather4%/gmi, (match) => this.weatherFormat4);
+        view.setViewData(editor,false);
+      }
+    } else {
+      view.editor.replaceSelection(this.format);
+    }
   }
 }
 
