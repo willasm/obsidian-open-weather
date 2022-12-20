@@ -8,6 +8,9 @@
 - [Template support](#template-support) for automatic weather insertion into your new documents
 - [DIV support](#div-support) for dynamic weather
 
+## Example Screenshots
+
+
 ## Settings
 
 #### **Enter Location**
@@ -75,11 +78,11 @@ These macros contained within the weather string will be replaced with the appro
 - ### Weather Placeholder notes
   - `%Icon%` - This is replaced with the image tag `<img src={Icon Url} />` This is more useful if it is embedded inside a [div](#div-support) code block.
 
-  - `%wind-gust%` This data is only returned by the API if the condition exists. To make this data optional within your string you can surround it with underscores.
+  - `%wind-gust%` This data is only returned by the API if the condition exists. To make this data optional within your string you can surround it with the caret symbols.
 
-  - For example: `Winds %wind-speed% Km/h_ with gusts up to %wind-gust% Km/h_`
+  - For example: `Winds %wind-speed% Km/h^ with gusts up to %wind-gust% Km/h^`
   - With wind gust data this will convert to: `Winds 10 Km/h with gusts up to 20 Km/h`
-  - Without wind gust data this will convert to: `Winds 10 Km/h` (The gusts text surrounded by underscores will be removed)
+  - Without wind gust data this will convert to: `Winds 10 Km/h` (The gusts text surrounded by carets will be removed)
 
 ## OpenWeather Plugin Commands
 
@@ -113,3 +116,5 @@ You can use the following class's to insert the corresponding weather string for
 - "weather_current_2" Inserts weather string format Two
 - "weather_current_3" Inserts weather string format Three
 - "weather_current_4" Inserts weather string format Four
+
+Note: This also allows you to style the output using CSS, see [EXAMPLES.md](EXAMPLES.md) for details.

@@ -3,6 +3,8 @@ import { link } from 'fs';
 import { Settings } from 'http2';
 import { App, Editor, MarkdownView, MarkdownPreviewRenderer, MarkdownPostProcessor, Modal, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent, TFile, Vault, TFolder, SuggestModal } from 'obsidian';
 
+let displayErrorMsg = true;
+
 interface OpenWeatherSettings {
   location: string;
   key: string;
@@ -20,12 +22,12 @@ const DEFAULT_SETTINGS: OpenWeatherSettings = {
   location: '',
   key: '',
   units: 'metric',
-  weatherFormat1: '%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% ● Current Temp: %temp%°C ● Feels Like: %feels%°C ● %wind-speed% Km/h from the %wind-dir%_ with gusts up to %wind-gust% Km/h_',
-  weatherFormat2: '%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM%\nCurrent Temp: %temp%°C ● Feels Like: %feels%°C\n%wind-speed% Km/h from the %wind-dir%_ with gusts up to %wind-gust% Km/h_\nSunrise:%sunrise% ● Sunset%sunset%',
-  weatherFormat3: '',
-  weatherFormat4: '',
+  weatherFormat1: '%desc% • Current Temp: %temp%°C • Feels Like: %feels%°C\n',
+  weatherFormat2: '%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n',
+  weatherFormat3: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+  weatherFormat4: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
   statusbarActive: true,
-  weatherFormatSB: ' 🔸 Weather Updated: %dateMonth3% %dateDay2% - %timeH2%:%timeM% %ampm1% 🔸 %desc% 🔸  🌡 %temp%°C 🔸 Feels Like: %feels%°C 🔸 Wind: %wind-speed% Km/h from the %wind-dir%_ with gusts up to %wind-gust% Km/h_ 🔸 ',
+  weatherFormatSB: ' | %desc% | Current Temp: %temp%°C | Feels Like: %feels%°C | ',
   statusbarUpdateFreq: "15"
 }
 
@@ -178,11 +180,9 @@ class FormatWeather {
       "name": name
     }
   }catch(e){
-    console.error(e);
-    console.log("OpenWeather Plugin: Error encountered getting weather...")
     weatherData = {"status": "Error encountered getting weather..."};
-    //weatherString = "Error encountered getting weather..."};
-    //return weatherString;
+    console.error(e);
+    console.log("OpenWeather Plugin: Error encountered getting weather, check your settings...");
   }
 
     // getWeather - Create Formatted weather string 
@@ -200,10 +200,10 @@ class FormatWeather {
     weatherString = weatherString.replace(/%wind-speed%/g, weatherData.windSpeed);
     weatherString = weatherString.replace(/%wind-dir%/g, weatherData.windDirection);
     if (weatherData.windGust == "N/A") {
-      weatherString = weatherString.replace(/_.+_/g, "");
+      weatherString = weatherString.replace(/\^.+\^/g, "");
     } else {
       weatherString = weatherString.replace(/%wind-gust%/g, weatherData.windGust);
-      weatherString = weatherString.replace(/_(.+)_/g, "$1");
+      weatherString = weatherString.replace(/\^(.+)\^/g, "$1");
     }
     weatherString = weatherString.replace(/%dateYear1%/g, `${weatherData.year1}`);
     weatherString = weatherString.replace(/%dateYear2%/g, `${weatherData.year2}`);
@@ -227,7 +227,7 @@ class FormatWeather {
     if (weatherData.status === "ok"){
       return weatherString;
     }
-    weatherString = "OpenWeather Plugin: Error encountered getting weather...";
+    weatherString = "OpenWeather Plugin: Error encountered getting weather, check your settings...";
     return weatherString;
   }
 
@@ -296,8 +296,12 @@ export default class OpenWeather extends Plugin {
     // this.updateStatusBar();
     if (this.settings.statusbarActive) {
       if (this.settings.key.length == 0 || this.settings.location.length == 0) {
-        new Notice("OpenWeather plugin settings are undefined.")
-        this.statusBar.setText('');
+        if (displayErrorMsg) {
+          new Notice("OpenWeather plugin settings are undefined, check your settings.", 8000)
+          this.statusBar.setText('');
+          console.log('Err:', displayErrorMsg);
+          displayErrorMsg = false;
+        }
       } else {
         let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
@@ -579,8 +583,11 @@ export default class OpenWeather extends Plugin {
   async updateWeather() {
     if (this.settings.statusbarActive) {
       if (this.settings.key.length == 0 || this.settings.location.length == 0) {
-        new Notice("OpenWeather plugin settings are undefined.")
-        this.statusBar.setText('');
+        if (displayErrorMsg) {
+          new Notice("OpenWeather plugin settings are undefined, check your settings.");
+          this.statusBar.setText('');
+          displayErrorMsg = false;
+        }
       } else {
         let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
@@ -748,7 +755,8 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           //console.log('Location: ' + value);
           this.plugin.settings.location = value;
           await this.plugin.saveSettings();
-      }));
+          await this.plugin.updateWeather();
+        }));
 
     new Setting(containerEl)
       .setName('OpenWeather API Key')
@@ -760,7 +768,8 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           //console.log('OpenWeather API Key: ' + value);
           this.plugin.settings.key = value;
           await this.plugin.saveSettings();
-      }));
+          await this.plugin.updateWeather();
+        }));
 
     new Setting(containerEl)
       .setName("Units of Measurement")
@@ -773,6 +782,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           //console.log('Units of measurement: ' + value);
           this.plugin.settings.units = value;
           await this.plugin.saveSettings();
+          await this.plugin.updateWeather();
         })
       .setValue(this.plugin.settings.units)
       });
@@ -852,7 +862,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       .onChange(async (value) => {
         this.plugin.settings.statusbarActive = value;
         await this.plugin.saveSettings();
-        this.plugin.updateWeather();
+        await this.plugin.updateWeather();
     }));
 
     new Setting(containerEl)
@@ -865,7 +875,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       .onChange(async (value) => {
         this.plugin.settings.weatherFormatSB = value;
         await this.plugin.saveSettings();
-        this.plugin.updateWeather();
+        await this.plugin.updateWeather();
       })
       textArea.inputEl.setAttr("rows", 10);
       textArea.inputEl.setAttr("cols", 60);
@@ -886,7 +896,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           //console.log('Statusbar Update Frequency: ' + value);
           this.plugin.settings.statusbarUpdateFreq = value;
           await this.plugin.saveSettings();
-          this.plugin.updateWeather();
+          await this.plugin.updateWeather();
         })
       .setValue(this.plugin.settings.statusbarUpdateFreq)
       });
