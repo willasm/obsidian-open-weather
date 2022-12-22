@@ -2,7 +2,7 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
-## [1.0.0] 2022-12-06
+## [1.0.0] 2022-12-22
 - Initial release
 
 

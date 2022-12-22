@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-open-weather",
 	"version": "1.0.0",
-	"description": "Returns weather information from OpenWeather",
+	"description": "Returns weather information from OpenWeather API",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

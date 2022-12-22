@@ -4,7 +4,7 @@
 
 This is an example of how I add the weather information into my Daily Notes. The recorded temperature is the permanently recorded temperature available at the time of my Daily Notes creation. When I hover over that it shows me the current temperature information. This is achieved through the use of CSS. All the code involved is also listed in this document.
 
-It makes use of the following plugins, [banners](https://github.com/noatpad/obsidian-banners), [templater](https://github.com/SilentVoid13/Templater), and [buttons](https://github.com/shabegom/buttons) and of course this plugin [OpenWeather](https://github.com/willasm/obsidian-open-weather).
+It makes use of the following plugins, [banners](https://github.com/noatpad/obsidian-banners), [templater](https://github.com/SilentVoid13/Templater) and of course this plugin [OpenWeather](https://github.com/willasm/obsidian-open-weather).
 
 ### Screenshot
 
@@ -39,7 +39,6 @@ description: Daily Note
 ---
 
 ## Todo Today
-- [ ] `button-review` Review recent notes.
 
 ## Achievments for Today
 
@@ -159,40 +158,4 @@ description: Daily Note
     display: none;
 }
 
-```
-
-## My Review Notes Home Button Definition
-
-```button
-name Review Notes Home
-type link
-action obsidian://open?vault=Programming&file=Review%20Notes%20Home
-class button
-```
-^button-review
-
-## My Review Notes Home Button CSS (buttons.css)
-
-```css
-.button.button {
-  background-color: #128075;
-  border: 2px solid #4dad0d;
-  border-radius: 12px;
-  color: #efefef;
-  text-align: center;
-  text-decoration: none;
-  margin: 0px 5px;
-  font-family: cursive;
-  font-size: 12pt;
-  width: auto;
-  height: 1.75rem;
-  cursor: pointer;
-  transition: all 0.33s ease;
-}
-
-.button.button:hover {
-  background-color: #15a595;
-  color: #f0f0f0;
-  border: 2px solid #99bd10;
-}
 ```
