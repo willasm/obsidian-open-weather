@@ -1,4 +1,4 @@
-# OpenWeather Plugin fo Obsidian
+# OpenWeather Plugin for Obsidian
 
 ## Features
 - Display current weather in the statusbar
@@ -8,8 +8,46 @@
 - [Template support](#template-support) for automatic weather insertion into your new documents
 - [DIV support](#div-support) for dynamic weather
 
-## Example Screenshots
+## Default Weather Strings with Example Screenshots
 
+#### **Statusbar String**
+`' | %desc% | Current Temp: %temp%°C | Feels Like: %feels%°C | '`
+
+![Statusbar](/images/Statusbar-1.png)
+
+#### **Weather Format String One**
+`'%desc% • Current Temp: %temp%°C • Feels Like: %feels%°C\n'`
+
+![Format One](/images/Format1-1.png)
+
+#### **Weather Format String Two**
+`'%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n'`
+
+![Format Two](/images/Format2-1.png)
+
+#### **Weather Format String Three**
+`'%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%'`
+
+![Format Three](/images/Format3-1.png)
+
+#### **Weather Format String Four**
+`'%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%'`
+
+![Format Four](/images/Format4-1.png)
+
+#### **Format Strings Three & Four within DIV's and styled wih CSS**
+
+Format String Three...
+
+![Format Three](/images/Format3-2.png)
+
+Format String Four...
+
+![Format Four](/images/Format4-2.png)
+
+Note: The `\n`'s are not required when editing these in the settings. Simply enter a `return` to add a new line and the `\n` will be added to the saved settings file. The `<br>`'s in string formats 3 & 4 are required for use in HTML.
+
+See [EXAMPLE.md](EXAMPLE.md) for a demonstration of how I use this in my Daily Template.
 
 ## Settings
 
@@ -21,6 +59,8 @@ Enter your OpenWeather API Key here (Required)
 
 _A free OpenWeather API key is required for the plugin to work.
 Go to https://openweathermap.org to register and get a key._
+
+_Direct link to signup page https://home.openweathermap.org/users/sign_up_.
 
 #### **Units of Measurement**
 Standard, Metric and Imperial units can be selected here. (Note: Standard is in Kelvin, not really useful in most cases)
@@ -104,7 +144,8 @@ You can place the following strings in your templates and when creating a new do
 - `%weather4%` - Inserts weather string format Four
 
 ## DIV support
-You can insert the following DIV inside your documents to provide dynamic weather which is updated at the frequency set in the [settings _Update Frequency_](#update-frequency) setting
+You can insert the following DIV inside your documents to provide dynamic weather which is updated at the frequency set in the [settings _Update Frequency_](#update-frequency) setting. See [EXAMPLE.md](EXAMPLE.md) for a demonstration of how I use these in my Daily Template.
+
 
 ```html
 <div class="weather_current_1"></div>
@@ -117,4 +158,4 @@ You can use the following class's to insert the corresponding weather string for
 - "weather_current_3" Inserts weather string format Three
 - "weather_current_4" Inserts weather string format Four
 
-Note: This also allows you to style the output using CSS, see [EXAMPLES.md](EXAMPLES.md) for details.
+Note: This also allows you to style the output using CSS, see [EXAMPLE.md](EXAMPLE.md) for details.
