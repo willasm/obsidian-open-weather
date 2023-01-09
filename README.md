@@ -58,7 +58,7 @@ Enter your city's name (Required)
 Enter your OpenWeather API Key here (Required)
 
 _A free OpenWeather API key is required for the plugin to work.
-Go to https://openweathermap.org to register and get a key._
+Go to https://openweathermap.org to register and get a key. (Warning: Perhaps the new key will become active within a few hours. If you encounter an error in the plugin after creating a new key, try just waiting a little)_
 
 _Direct link to signup page https://home.openweathermap.org/users/sign_up_.
 
