@@ -57,10 +57,11 @@ Enter your city's name (Required)
 #### **OpenWeather API Key**
 Enter your OpenWeather API Key here (Required)
 
-_A free OpenWeather API key is required for the plugin to work.
-Go to https://openweathermap.org to register and get a key. (Warning: Perhaps the new key will become active within a few hours. If you encounter an error in the plugin after creating a new key, try just waiting a little)_
+A free OpenWeather API key is required for the plugin to work.
+Go to https://openweathermap.org to register and get a key.
+Direct link to signup page https://home.openweathermap.org/users/sign_up.
 
-_Direct link to signup page https://home.openweathermap.org/users/sign_up_.
+Note: You will need to verify your email address, then your API key will be emailed to you. The key itself may take a couple of hours before it is activated. All this information will be included in the email they send to you.
 
 #### **Units of Measurement**
 Standard, Metric and Imperial units can be selected here. (Note: Standard is in Kelvin, not really useful in most cases)
@@ -158,4 +159,41 @@ You can use the following class's to insert the corresponding weather string for
 - "weather_current_3" Inserts weather string format Three
 - "weather_current_4" Inserts weather string format Four
 
-Note: This also allows you to style the output using CSS, see [EXAMPLE.md](EXAMPLE.md) for details.
+### Important Note:
+This also requires you to add the following line to the frontmatter of the note you want to display the current weather in...
+
+```
+---
+cssclass: openweather
+---
+```
+Then add the following css snippet, (name it 'openweather.css' or whatever you prefer), to your vaults snippet folder `vault-name/.obsidian/snippets` (create the snippets folder if it does not exist already)...
+
+Don't forget to enable the snippet in settings/appearance (at the bottom).
+
+```css
+.openweather {
+    padding-left: 25px !important;
+    padding-right: 25px !important;
+    padding-top: 20px !important;
+}
+
+/* Current weather One, Two, Three and Four settings */
+/* These are not necessary but demonstrate how to style the weather string */
+.weather_current_1, .weather_current_2, .weather_current_3, .weather_current_4 {
+    display: flex;
+    float: left;
+    clear: left;
+    color: #c4caa5;
+    background-color: #133e2c;
+    align-items: center;
+    top: 80px;
+    left: 35px;
+    position: absolute;
+    font-family: monospace;
+    font-size: 14pt !important;
+    margin: 10px 5px;
+    padding: 10px 20px;
+    box-shadow: 3px 3px 2px #414654;
+}
+```
