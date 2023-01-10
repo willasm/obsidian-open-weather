@@ -403,7 +403,7 @@ export default class OpenWeather extends Plugin {
       id: 'insert-format-four',
       name: 'Insert weather format four',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat3.length > 0) {
+        if (this.settings.weatherFormat4.length > 0) {
           let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           editor.replaceSelection(`${weatherStr}`);
@@ -412,6 +412,23 @@ export default class OpenWeather extends Plugin {
         }
       }
     });
+
+    // // onload - Update Weather DIV 
+    // this.addCommand ({
+    //   id: 'update-weather-div',
+    //   name: 'Update Weather DIV',
+    //   callback: () => {
+    //     this.updateCurrentWeatherDiv();
+    //     // if (this.settings.weatherFormat4.length > 0) {
+    //     //   let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+    //     //   let weatherStr = await wstr.getWeatherString();
+    //     //   editor.replaceSelection(`${weatherStr}`);
+    //     // } else {
+    //     //   new Notice('Weather string 4 is undefined! Please add a definition for it in the OpenWeather plugin settings.', 5000);
+    //     // }
+    //     console.log('Updating DIV...');
+    //   }
+    // });
 
     // onload - This adds a settings tab so the user can configure various aspects of the plugin 
     this.addSettingTab(new OpenWeatherSettingsTab(this.app, this));
@@ -498,13 +515,13 @@ export default class OpenWeather extends Plugin {
   // • updateCurrentWeatherDiv - Update DIV's with current weather • 
   async updateCurrentWeatherDiv() {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!view) return;
+//    if (!view) return;
     //console.log('Filename:',view.file.basename);
-    if (view.getViewType() === 'markdown') {
+//    if (view.getViewType() === 'markdown') {
       //console.log('View Type:', view.getViewType());
       const md = view as MarkdownView;
       //console.log('Mode:', mode);
-      if (md.getMode() === 'preview') {
+//      if (md.getMode() === 'preview') {
         if(document.getElementsByClassName('weather_current_1').length === 1) {
           const divEl = document.getElementsByClassName('weather_current_1')[0];
           let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
@@ -534,8 +551,8 @@ export default class OpenWeather extends Plugin {
           //console.log('--==Updating Weather Four==--');
         }
       }
-    }
-  }
+//    }
+//  }
       
   // • replaceTemplateStrings - Replace any template strings in current file • 
   async replaceTemplateStrings() {
