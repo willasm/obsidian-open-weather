@@ -33,6 +33,7 @@ var DEFAULT_SETTINGS = {
   location: "",
   key: "",
   units: "metric",
+  excludeFolder: "",
   weatherFormat1: "%desc% \u2022 Current Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\n",
   weatherFormat2: "%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\nWind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^\nSunrise: %sunrise% \u2022 Sunset: %sunset%\n",
   weatherFormat3: "%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% \u2022 %timeH2%:%timeM% %ampm1% \u2022 %desc%<br>&nbsp;Recorded Temp: %temp% \u2022 Felt like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% \u2022 Sunset: %sunset%",
@@ -51,130 +52,124 @@ var FormatWeather = class {
   async getWeather() {
     let weatherData;
     let weatherString;
-    try {
-      let url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&appid=${this.key}&units=${this.units}`;
-      let req = await fetch(url);
-      let json = await req.json();
-      let conditions = json.weather[0].description;
-      conditions = conditions.replace(/^\w|\s\w/g, (c2) => c2.toUpperCase());
-      let iconName = json.weather[0].icon;
-      const iconApi = await fetch("http://openweathermap.org/img/w/" + iconName + ".png");
-      let iconUrl = iconApi.url;
-      let temp = json.main.temp;
-      temp = Math.round(temp);
-      let feelsLike = json.main.feels_like;
-      feelsLike = Math.round(feelsLike);
-      let tempMin = json.main.temp_min;
-      tempMin = Math.round(tempMin);
-      let tempMax = json.main.temp_max;
-      tempMax = Math.round(tempMax);
-      let pressure = json.main.pressure;
-      let humidity = json.main.humidity;
-      let seaLevel = json.main.sea_level;
-      let groundLevel = json.main.grnd_level;
-      let visibility = json.visibility;
-      let windSpeed = json.wind.speed;
-      if (this.units == "metric") {
-        windSpeed = Math.round(windSpeed * 3.6);
-      } else {
-        windSpeed = Math.round(windSpeed);
-      }
-      let windDirection = json.wind.deg;
-      windDirection = this.getCardinalDirection(windDirection);
-      let windGust = json.wind.gust;
-      if (windGust != void 0) {
-        if (this.units == "metric") {
-          windGust = Math.round(windGust * 3.6);
-        } else {
-          windGust = Math.round(windGust);
-        }
-      } else {
-        windGust = "N/A";
-      }
-      let dt = json.dt;
-      let a = new Date(dt * 1e3);
-      const months1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
-      const months2 = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-      const months3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const months4 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      let year1 = a.getFullYear();
-      let year2str = String(year1).slice(-2);
-      let year2 = Number(year2str);
-      let month1 = months1[a.getMonth()];
-      let month2 = months2[a.getMonth()];
-      let month3 = months3[a.getMonth()];
-      let month4 = months4[a.getMonth()];
-      let date1 = a.getDate();
-      let date2 = a.getDate() < 10 ? "0" + a.getDate() : a.getDate();
-      let ampm1 = "AM";
-      let ampm2 = "am";
-      if (a.getHours() > 11) {
-        ampm1 = "PM";
-        ampm2 = "pm";
-      }
-      let hour1 = a.getHours();
-      let hour2 = a.getHours();
-      if (a.getHours() > 12) {
-        hour2 = a.getHours() - 12;
-      }
-      if (a.getHours() == 0) {
-        hour1 = 12;
-        hour2 = 12;
-      }
-      let min = a.getMinutes() < 10 ? "0" + a.getMinutes() : a.getMinutes();
-      let sec = a.getSeconds() < 10 ? "0" + a.getSeconds() : a.getSeconds();
-      let sr = json.sys.sunrise;
-      let b = new Date(sr * 1e3);
-      let srhour = b.getHours() < 10 ? "0" + b.getHours() : b.getHours();
-      let srmin = b.getMinutes() < 10 ? "0" + b.getMinutes() : b.getMinutes();
-      let srsec = b.getSeconds() < 10 ? "0" + b.getSeconds() : b.getSeconds();
-      let sunrise = srhour + ":" + srmin + ":" + srsec;
-      let ss = json.sys.sunset;
-      let c = new Date(ss * 1e3);
-      let sshour = c.getHours() < 10 ? "0" + c.getHours() : c.getHours();
-      let ssmin = c.getMinutes() < 10 ? "0" + c.getMinutes() : c.getMinutes();
-      let sssec = c.getSeconds() < 10 ? "0" + c.getSeconds() : c.getSeconds();
-      let sunset = sshour + ":" + ssmin + ":" + sssec;
-      let name = json.name;
-      weatherData = {
-        "status": "ok",
-        "conditions": conditions,
-        "icon": iconUrl,
-        "temp": temp,
-        "feelsLike": feelsLike,
-        "tempMin": tempMin,
-        "tempMax": tempMax,
-        "pressure": pressure,
-        "humidity": humidity,
-        "seaLevel": seaLevel,
-        "groundLevel": groundLevel,
-        "visibility": visibility,
-        "windSpeed": windSpeed,
-        "windDirection": windDirection,
-        "windGust": windGust,
-        "year1": year1,
-        "year2": year2,
-        "month1": month1,
-        "month2": month2,
-        "month3": month3,
-        "month4": month4,
-        "date1": date1,
-        "date2": date2,
-        "ampm1": ampm1,
-        "ampm2": ampm2,
-        "hour1": hour1,
-        "hour2": hour2,
-        "min": min,
-        "sec": sec,
-        "sunrise": sunrise,
-        "sunset": sunset,
-        "name": name
-      };
-    } catch (e) {
-      weatherData = { "status": "Error encountered getting weather..." };
-      console.error(e);
-      console.log("OpenWeather Plugin: Error encountered getting weather, check your settings...");
+    let url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&appid=${this.key}&units=${this.units}`;
+    let req = await fetch(url);
+    let json = await req.json();
+    let conditions = json.weather[0].description;
+    conditions = conditions.replace(/^\w|\s\w/g, (c2) => c2.toUpperCase());
+    let iconName = json.weather[0].icon;
+    const iconApi = await fetch("http://openweathermap.org/img/w/" + iconName + ".png");
+    let iconUrl = iconApi.url;
+    let temp = json.main.temp;
+    temp = Math.round(temp);
+    let feelsLike = json.main.feels_like;
+    feelsLike = Math.round(feelsLike);
+    let tempMin = json.main.temp_min;
+    tempMin = Math.round(tempMin);
+    let tempMax = json.main.temp_max;
+    tempMax = Math.round(tempMax);
+    let pressure = json.main.pressure;
+    let humidity = json.main.humidity;
+    let seaLevel = json.main.sea_level;
+    let groundLevel = json.main.grnd_level;
+    let visibility = json.visibility;
+    let windSpeed = json.wind.speed;
+    if (this.units == "metric") {
+      windSpeed = Math.round(windSpeed * 3.6);
+    } else {
+      windSpeed = Math.round(windSpeed);
     }
+    let windDirection = json.wind.deg;
+    windDirection = this.getCardinalDirection(windDirection);
+    let windGust = json.wind.gust;
+    if (windGust != void 0) {
+      if (this.units == "metric") {
+        windGust = Math.round(windGust * 3.6);
+      } else {
+        windGust = Math.round(windGust);
+      }
+    } else {
+      windGust = "N/A";
+    }
+    let dt = json.dt;
+    let a = new Date(dt * 1e3);
+    const months1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+    const months2 = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+    const months3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months4 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let year1 = a.getFullYear();
+    let year2str = String(year1).slice(-2);
+    let year2 = Number(year2str);
+    let month1 = months1[a.getMonth()];
+    let month2 = months2[a.getMonth()];
+    let month3 = months3[a.getMonth()];
+    let month4 = months4[a.getMonth()];
+    let date1 = a.getDate();
+    let date2 = a.getDate() < 10 ? "0" + a.getDate() : a.getDate();
+    let ampm1 = "AM";
+    let ampm2 = "am";
+    if (a.getHours() > 11) {
+      ampm1 = "PM";
+      ampm2 = "pm";
+    }
+    let hour1 = a.getHours();
+    let hour2 = a.getHours();
+    if (a.getHours() > 12) {
+      hour2 = a.getHours() - 12;
+    }
+    if (a.getHours() == 0) {
+      hour1 = 12;
+      hour2 = 12;
+    }
+    let min = a.getMinutes() < 10 ? "0" + a.getMinutes() : a.getMinutes();
+    let sec = a.getSeconds() < 10 ? "0" + a.getSeconds() : a.getSeconds();
+    let sr = json.sys.sunrise;
+    let b = new Date(sr * 1e3);
+    let srhour = b.getHours() < 10 ? "0" + b.getHours() : b.getHours();
+    let srmin = b.getMinutes() < 10 ? "0" + b.getMinutes() : b.getMinutes();
+    let srsec = b.getSeconds() < 10 ? "0" + b.getSeconds() : b.getSeconds();
+    let sunrise = srhour + ":" + srmin + ":" + srsec;
+    let ss = json.sys.sunset;
+    let c = new Date(ss * 1e3);
+    let sshour = c.getHours() < 10 ? "0" + c.getHours() : c.getHours();
+    let ssmin = c.getMinutes() < 10 ? "0" + c.getMinutes() : c.getMinutes();
+    let sssec = c.getSeconds() < 10 ? "0" + c.getSeconds() : c.getSeconds();
+    let sunset = sshour + ":" + ssmin + ":" + sssec;
+    let name = json.name;
+    weatherData = {
+      "status": "ok",
+      "conditions": conditions,
+      "icon": iconUrl,
+      "temp": temp,
+      "feelsLike": feelsLike,
+      "tempMin": tempMin,
+      "tempMax": tempMax,
+      "pressure": pressure,
+      "humidity": humidity,
+      "seaLevel": seaLevel,
+      "groundLevel": groundLevel,
+      "visibility": visibility,
+      "windSpeed": windSpeed,
+      "windDirection": windDirection,
+      "windGust": windGust,
+      "year1": year1,
+      "year2": year2,
+      "month1": month1,
+      "month2": month2,
+      "month3": month3,
+      "month4": month4,
+      "date1": date1,
+      "date2": date2,
+      "ampm1": ampm1,
+      "ampm2": ampm2,
+      "hour1": hour1,
+      "hour2": hour2,
+      "min": min,
+      "sec": sec,
+      "sunrise": sunrise,
+      "sunset": sunset,
+      "name": name
+    };
     weatherString = this.format.replace(/%desc%/g, weatherData.conditions);
     weatherString = weatherString.replace(/%icon%/g, `<img src=${weatherData.icon} />`);
     weatherString = weatherString.replace(/%temp%/g, weatherData.temp);
@@ -211,10 +206,6 @@ var FormatWeather = class {
     weatherString = weatherString.replace(/%sunrise%/g, `${weatherData.sunrise}`);
     weatherString = weatherString.replace(/%sunset%/g, `${weatherData.sunset}`);
     weatherString = weatherString.replace(/%name%/g, `${weatherData.name}`);
-    if (weatherData.status === "ok") {
-      return weatherString;
-    }
-    weatherString = "OpenWeather Plugin: Error encountered getting weather, check your settings...";
     return weatherString;
   }
   async getWeatherString() {
@@ -227,17 +218,9 @@ var FormatWeather = class {
   }
 };
 var OpenWeather = class extends import_obsidian.Plugin {
-  constructor() {
-    super(...arguments);
-    this.createdFile = false;
-    this.openedFile = false;
-    this.changedFile = false;
-    this.resolvedFile = false;
-    this.fileName = "";
-  }
   async onload() {
     await this.loadSettings();
-    const ribbonIconEl = this.addRibbonIcon("thermometer-snowflake", "OpenWeather", (evt) => {
+    this.addRibbonIcon("thermometer-snowflake", "OpenWeather", (evt) => {
       const view = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
       if (!view) {
         new import_obsidian.Notice("Open a Markdown file first.");
@@ -254,7 +237,6 @@ var OpenWeather = class extends import_obsidian.Plugin {
         new import_obsidian.Notice("Open a Markdown file first.");
       }
     });
-    ribbonIconEl.addClass("my-plugin-ribbon-class");
     this.statusBar = this.addStatusBarItem();
     if (this.settings.statusbarActive) {
       if (this.settings.key.length == 0 || this.settings.location.length == 0) {
@@ -280,7 +262,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           if (view.data.contains("%weather1%")) {
             let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
             let weatherStr = await wstr.getWeatherString();
-            let doc = editor.getValue().replace(/%weather1%/gm, (match) => weatherStr);
+            let doc = editor.getValue().replace(/%weather1%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
@@ -288,7 +270,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           if (view.data.contains("%weather2%")) {
             let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
             let weatherStr = await wstr.getWeatherString();
-            let doc = editor.getValue().replace(/%weather2%/gm, (match) => weatherStr);
+            let doc = editor.getValue().replace(/%weather2%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
@@ -296,7 +278,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           if (view.data.contains("%weather3%")) {
             let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
             let weatherStr = await wstr.getWeatherString();
-            let doc = editor.getValue().replace(/%weather3%/gm, (match) => weatherStr);
+            let doc = editor.getValue().replace(/%weather3%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
@@ -304,7 +286,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           if (view.data.contains("%weather4%")) {
             let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
             let weatherStr = await wstr.getWeatherString();
-            let doc = editor.getValue().replace(/%weather4%/gm, (match) => weatherStr);
+            let doc = editor.getValue().replace(/%weather4%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
@@ -362,52 +344,17 @@ var OpenWeather = class extends import_obsidian.Plugin {
         }
       }
     });
-    this.addCommand({
-      id: "update-weather-div",
-      name: "Update Weather DIV",
-      callback: () => {
-        this.updateCurrentWeatherDiv();
-        console.log("Updating DIV...");
-      }
-    });
     this.addSettingTab(new OpenWeatherSettingsTab(this.app, this));
-    this.registerEvent(this.app.vault.on("create", async (file) => {
-      this.newFileNamePath = "";
-      if (file instanceof import_obsidian.TFolder) {
-        return;
-      }
-      this.newFileNamePath = file.path;
-    }));
-    this.registerEvent(this.app.vault.on("rename", async (file, oldPath) => {
-      if (file instanceof import_obsidian.TFolder) {
-        return;
-      }
-      if (oldPath == this.newFileNamePath) {
-        this.newFileNamePath = file.path;
-      } else {
-        return;
-      }
-    }));
-    this.registerEvent(this.app.vault.on("modify", async (file) => {
-      if (file instanceof import_obsidian.TFolder) {
-        return;
-      }
-      if (file.path == this.newFileNamePath) {
-        this.newFileNamePath = "";
-        await new Promise((r) => setTimeout(r, 1e3));
+    this.registerEvent(this.app.workspace.on("file-open", async (file) => {
+      if (file) {
+        await new Promise((r) => setTimeout(r, 2e3));
         await this.replaceTemplateStrings();
         await this.updateCurrentWeatherDiv();
       }
     }));
-    this.registerEvent(this.app.workspace.on("file-open", async (file) => {
-      if (file) {
-        await new Promise((r) => setTimeout(r, 1e3));
-        await this.updateCurrentWeatherDiv();
-      }
-    }));
-    this.registerEvent(this.app.workspace.on("layout-change", async () => {
-      await new Promise((r) => setTimeout(r, 2e3));
-      this.updateCurrentWeatherDiv();
+    this.registerEvent(this.app.metadataCache.on("resolved", async () => {
+      await this.replaceTemplateStrings();
+      await this.updateCurrentWeatherDiv();
     }));
     let updateFreq = this.settings.statusbarUpdateFreq;
     this.registerInterval(window.setInterval(() => this.updateWeather(), Number(updateFreq) * 60 * 1e3));
@@ -415,7 +362,8 @@ var OpenWeather = class extends import_obsidian.Plugin {
   }
   async updateCurrentWeatherDiv() {
     const view = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
-    const md = view;
+    if (!view)
+      return;
     if (document.getElementsByClassName("weather_current_1").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_1")[0];
       let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
@@ -445,7 +393,8 @@ var OpenWeather = class extends import_obsidian.Plugin {
     const view = this.app.workspace.getActiveViewOfType(import_obsidian.MarkdownView);
     if (!view)
       return;
-    if (view.file.parent.path === "Templates")
+    const file = app.workspace.getActiveFile();
+    if (view.file.parent.path === this.settings.excludeFolder)
       return;
     let editor = view.getViewData();
     if (editor == null)
@@ -454,32 +403,32 @@ var OpenWeather = class extends import_obsidian.Plugin {
       if (editor.contains("%weather1%")) {
         let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
         let weatherStr = await wstr.getWeatherString();
-        editor = editor.replace(/%weather1%/gmi, (match) => weatherStr);
-        view.setViewData(editor, false);
+        editor = editor.replace(/%weather1%/gmi, weatherStr);
+        file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
     if (this.settings.weatherFormat2.length > 0) {
       if (editor.contains("%weather2%")) {
         let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
         let weatherStr = await wstr.getWeatherString();
-        editor = editor.replace(/%weather2%/gmi, (match) => weatherStr);
-        view.setViewData(editor, false);
+        editor = editor.replace(/%weather2%/gmi, weatherStr);
+        file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
     if (this.settings.weatherFormat3.length > 0) {
       if (editor.contains("%weather3%")) {
         let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
         let weatherStr = await wstr.getWeatherString();
-        editor = editor.replace(/%weather3%/gmi, (match) => weatherStr);
-        view.setViewData(editor, false);
+        editor = editor.replace(/%weather3%/gmi, weatherStr);
+        file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
     if (this.settings.weatherFormat4.length > 0) {
       if (editor.contains("%weather4%")) {
         let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
         let weatherStr = await wstr.getWeatherString();
-        editor = editor.replace(/%weather4%/gmi, (match) => weatherStr);
-        view.setViewData(editor, false);
+        editor = editor.replace(/%weather4%/gmi, weatherStr);
+        file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
   }
@@ -568,19 +517,19 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
       return;
     if (command.command == "Replace Template Strings") {
       if (this.weatherFormat1.length > 0) {
-        editor = editor.replace(/%weather1%/gmi, (match) => this.weatherFormat1);
+        editor = editor.replace(/%weather1%/gmi, this.weatherFormat1);
         view.setViewData(editor, false);
       }
       if (this.weatherFormat2.length > 0) {
-        editor = editor.replace(/%weather2%/gmi, (match) => this.weatherFormat2);
+        editor = editor.replace(/%weather2%/gmi, this.weatherFormat2);
         view.setViewData(editor, false);
       }
       if (this.weatherFormat3.length > 0) {
-        editor = editor.replace(/%weather3%/gmi, (match) => this.weatherFormat3);
+        editor = editor.replace(/%weather3%/gmi, this.weatherFormat3);
         view.setViewData(editor, false);
       }
       if (this.weatherFormat4.length > 0) {
-        editor = editor.replace(/%weather4%/gmi, (match) => this.weatherFormat4);
+        editor = editor.replace(/%weather4%/gmi, this.weatherFormat4);
         view.setViewData(editor, false);
       }
     } else {
@@ -596,6 +545,13 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
+    const abstractFiles = app.vault.getAllLoadedFiles();
+    const folders = [];
+    abstractFiles.forEach((folder) => {
+      if (folder instanceof import_obsidian.TFolder && folder.name.length > 0) {
+        folders.push(folder);
+      }
+    });
     containerEl.createEl("h2", { text: "Settings for calling OpenWeather API" });
     new import_obsidian.Setting(containerEl).setName("Enter Location").setDesc("Name of the city you want to retrieve weather for").addText((text) => text.setPlaceholder("Enter city Eg. edmonton").setValue(this.plugin.settings.location).onChange(async (value) => {
       this.plugin.settings.location = value;
@@ -617,6 +573,18 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.updateWeather();
       }).setValue(this.plugin.settings.units);
     });
+    containerEl.createEl("br");
+    containerEl.createEl("h2", { text: "Folder to Exclude From Automatic Template Strings Replacement" });
+    new import_obsidian.Setting(containerEl).setName("Exclude Folder").setDesc("Folder to Exclude from Automatic Template String Replacement").addDropdown((dropDown) => {
+      folders.forEach((e) => {
+        dropDown.addOption(e.name, e.name);
+      });
+      dropDown.onChange(async (value) => {
+        this.plugin.settings.excludeFolder = value;
+        await this.plugin.saveSettings();
+      }).setValue(this.plugin.settings.excludeFolder);
+    });
+    containerEl.createEl("br");
     containerEl.createEl("h2", { text: "Weather Strings Formatting (Up to 4 Strings are Available)" });
     new import_obsidian.Setting(containerEl).setName("Weather String Format 1").setDesc("Weather string format one").addTextArea((textArea) => {
       textArea.setPlaceholder("Weather String Format 1").setValue(this.plugin.settings.weatherFormat1).onChange(async (value) => {
@@ -650,22 +618,29 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
       textArea.inputEl.setAttr("rows", 10);
       textArea.inputEl.setAttr("cols", 60);
     });
-    containerEl.createEl("h2", { text: "Show Weather in Statusbar Options" });
-    new import_obsidian.Setting(containerEl).setName("Show Weather in Statusbar").setDesc("Enable weather display in statusbar").addToggle((toggle) => toggle.setValue(this.plugin.settings.statusbarActive).onChange(async (value) => {
-      this.plugin.settings.statusbarActive = value;
-      await this.plugin.saveSettings();
-      await this.plugin.updateWeather();
-    }));
-    new import_obsidian.Setting(containerEl).setName("Weather String Format Statusbar").setDesc("Weather string format for the statusbar").addTextArea((textArea) => {
-      textArea.setPlaceholder("Statusbar Weather Format").setValue(this.plugin.settings.weatherFormatSB).onChange(async (value) => {
-        this.plugin.settings.weatherFormatSB = value;
+    if (import_obsidian.Platform.isDesktop) {
+      containerEl.createEl("br");
+      containerEl.createEl("h2", { text: "Show Weather in Statusbar Options" });
+      new import_obsidian.Setting(containerEl).setName("Show Weather in Statusbar").setDesc("Enable weather display in statusbar").addToggle((toggle) => toggle.setValue(this.plugin.settings.statusbarActive).onChange(async (value) => {
+        this.plugin.settings.statusbarActive = value;
         await this.plugin.saveSettings();
         await this.plugin.updateWeather();
+      }));
+      new import_obsidian.Setting(containerEl).setName("Weather String Format Statusbar").setDesc("Weather string format for the statusbar").addTextArea((textArea) => {
+        textArea.setPlaceholder("Statusbar Weather Format").setValue(this.plugin.settings.weatherFormatSB).onChange(async (value) => {
+          this.plugin.settings.weatherFormatSB = value;
+          await this.plugin.saveSettings();
+          await this.plugin.updateWeather();
+        });
+        textArea.inputEl.setAttr("rows", 10);
+        textArea.inputEl.setAttr("cols", 60);
       });
-      textArea.inputEl.setAttr("rows", 10);
-      textArea.inputEl.setAttr("cols", 60);
-    });
-    new import_obsidian.Setting(containerEl).setName("Update Frequency").setDesc("Update frequency for the weather information displayed on the statusbar").addDropdown((dropDown) => {
+    } else {
+      this.plugin.settings.statusbarActive = false;
+    }
+    containerEl.createEl("br");
+    containerEl.createEl("h2", { text: `Show Weather in Statusbar and Dynamic DIV's Delay` });
+    new import_obsidian.Setting(containerEl).setName("Update Frequency").setDesc("Update frequency for weather information displayed on the statusbar and dynamic DIV's").addDropdown((dropDown) => {
       dropDown.addOption("1", "Every Minute");
       dropDown.addOption("5", "Every 5 Minutes");
       dropDown.addOption("10", "Every 10 Minutes");

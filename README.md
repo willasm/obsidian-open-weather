@@ -66,15 +66,18 @@ Note: You will need to verify your email address, then your API key will be emai
 #### **Units of Measurement**
 Standard, Metric and Imperial units can be selected here. (Note: Standard is in Kelvin, not really useful in most cases)
 
+#### **Exclude Folder**
+Folder to exclude from automatic [Template](#template-support) strings replacement. This should be set to your vaults template folder.
+
 #### **Weather Strings Formatting**
 Define your weather strings here (Up to 4 strings are available)
 
 _Tip: These strings can contain anything you want, not just weather information._
 
-#### **Show Weather in Statusbar**
+#### **Show Weather in Statusbar** Note: This will not be displayed on mobile app
 Toggle display of the current weather in the statusbar on or off
 
-#### **Weather String Format Statusbar**
+#### **Weather String Format Statusbar** Note: This will not be displayed on mobile app
 Define your statusbar weather string here
 
 #### **Update Frequency**
