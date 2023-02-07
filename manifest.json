@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-open-weather",
 	"name": "OpenWeather",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
 	"description": "This plugin returns the current weather from OpenWeather in a configurable string format.",
 	"author": "willasm",

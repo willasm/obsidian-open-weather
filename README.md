@@ -174,6 +174,9 @@ Then add the following css snippet, (name it 'openweather.css' or whatever you p
 
 Don't forget to enable the snippet in settings/appearance (at the bottom).
 
+Feel free to modify this snippet to achieve the layout you desire...
+
+
 ```css
 .openweather {
     padding-left: 25px !important;

@@ -1,8 +1,4 @@
-import { Console } from 'console';
-import { link } from 'fs';
-import { Settings } from 'http2';
-import { App, Editor, MarkdownView, MarkdownPreviewRenderer, MarkdownPostProcessor, Modal, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent, TFile, TAbstractFile, Vault, TFolder, SuggestModal, Platform } from 'obsidian';
-import { platform } from 'os';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent, TAbstractFile, TFolder, SuggestModal, Platform } from 'obsidian';
 
 let displayErrorMsg = true;
 
@@ -220,18 +216,12 @@ class FormatWeather {
     weatherString = weatherString.replace(/%sunset%/g, `${weatherData.sunset}`);
     weatherString = weatherString.replace(/%name%/g, `${weatherData.name}`);
 
-    // getWeather - Return the formatted weather string 
-    // if (weatherData.status === "ok"){
-    //   return weatherString;
-    // }
-    // weatherString = "OpenWeather Plugin: Error encountered getting weather, check your settings...";
     return weatherString;
   }
 
   // • getWeatherString - Returns a formatted weather string • 
   async getWeatherString() {
     let weatherString = await this.getWeather();
-    //console.log('Weather String:', weatherString);
     return weatherString;
   }
 
@@ -267,7 +257,6 @@ export default class OpenWeather extends Plugin {
         new Notice("Open a Markdown file first.");
         return;
       }
-      //console.log('Filename:',view.file.basename);
       if (view.getViewType() === 'markdown') {
         const md = view as MarkdownView;
         if (md.getMode() === 'source') {
@@ -304,14 +293,12 @@ export default class OpenWeather extends Plugin {
       id: 'replace-template-string',
       name: 'Replace template strings',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        //console.log('Editor: ',editor,'View: ',view)
         if (this.settings.weatherFormat1.length > 0) {
           if (view.data.contains("%weather1%")) {
             let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
             let weatherStr = await wstr.getWeatherString();
             let doc = editor.getValue().replace(/%weather1%/gmi, weatherStr);
             editor.setValue(doc);
-            //console.log('Doc: ',doc);
           }
         }
         if (this.settings.weatherFormat2.length > 0) {
@@ -407,7 +394,6 @@ export default class OpenWeather extends Plugin {
     // onload - registerEvent - 'file-open' 
     this.registerEvent(this.app.workspace.on('file-open', async (file) => {
       if (file) {
-        //console.log('File Opened:',file.name);
         await new Promise(r => setTimeout(r, 2000));    // Wait for Templater to do its thing
         await this.replaceTemplateStrings();
         await this.updateCurrentWeatherDiv();
@@ -416,14 +402,12 @@ export default class OpenWeather extends Plugin {
 
     // onload - registerEvent - 'resolved' 
     this.registerEvent(this.app.metadataCache.on('resolved', async () => {
-      //console.log('Resolved:');
       await this.replaceTemplateStrings();
       await this.updateCurrentWeatherDiv();
     }));
 
     // onload - When registering intervals, this function will automatically clear the interval when the plugin is disabled 
     let updateFreq = this.settings.statusbarUpdateFreq;
-    //console.log('Upd Freq:', updateFreq);
     this.registerInterval(window.setInterval(() => this.updateWeather(), Number(updateFreq) * 60 * 1000));
     this.registerInterval(window.setInterval(() => this.updateCurrentWeatherDiv(), Number(updateFreq) * 60 * 1000));
     
@@ -433,34 +417,29 @@ export default class OpenWeather extends Plugin {
   async updateCurrentWeatherDiv() {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) return;
-    //console.log('Filename:',view.file.basename);
       if(document.getElementsByClassName('weather_current_1').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_1')[0];
         let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
         let weatherStr = await wstr.getWeatherString();
         divEl.innerHTML = weatherStr;
-        //console.log('--==Updating Weather One==--');
       }
       if(document.getElementsByClassName('weather_current_2').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_2')[0];
         let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
         let weatherStr = await wstr.getWeatherString();
         divEl.innerHTML = weatherStr;
-        //console.log('--==Updating Weather Two==--');
       }
       if(document.getElementsByClassName('weather_current_3').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_3')[0];
         let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
         let weatherStr = await wstr.getWeatherString();
         divEl.innerHTML = weatherStr;
-        //console.log('--==Updating Weather Three==--');
       }
       if(document.getElementsByClassName('weather_current_4').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_4')[0];
         let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
         let weatherStr = await wstr.getWeatherString();
         divEl.innerHTML = weatherStr;
-        //console.log('--==Updating Weather Four==--');
       }
     }
       
@@ -690,7 +669,6 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         .setPlaceholder('Enter city Eg. edmonton')
         .setValue(this.plugin.settings.location)
         .onChange(async (value) => {
-          //console.log('Location: ' + value);
           this.plugin.settings.location = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
@@ -703,7 +681,6 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         .setPlaceholder('Enter OpenWeather API Key')
         .setValue(this.plugin.settings.key)
         .onChange(async (value) => {
-          //console.log('OpenWeather API Key: ' + value);
           this.plugin.settings.key = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
@@ -717,7 +694,6 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         dropDown.addOption('metric', 'Metric');
         dropDown.addOption('imperial', 'Imperial');
         dropDown.onChange(async (value) => {
-          //console.log('Units of measurement: ' + value);
           this.plugin.settings.units = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
@@ -737,7 +713,6 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           dropDown.addOption(e.name,e.name);
         });
         dropDown.onChange(async (value) => {
-          //console.log('Exclude Folder: ' + value);
           this.plugin.settings.excludeFolder = value;
           await this.plugin.saveSettings();
         })
@@ -860,7 +835,6 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         dropDown.addOption('30', 'Every 30 Minutes');
         dropDown.addOption('60', 'Every Hour');
         dropDown.onChange(async (value) => {
-          //console.log('Statusbar Update Frequency: ' + value);
           this.plugin.settings.statusbarUpdateFreq = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
