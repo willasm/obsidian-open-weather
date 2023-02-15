@@ -52,6 +52,7 @@ var FormatWeather = class {
   async getWeather() {
     let weatherData;
     let weatherString;
+    let testData = { "rain": { "3h": 24 } };
     let url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&appid=${this.key}&units=${this.units}`;
     let req = await fetch(url);
     let json = await req.json();
@@ -91,6 +92,71 @@ var FormatWeather = class {
     } else {
       windGust = "N/A";
     }
+    let clouds = json.clouds.all;
+    let rain1h;
+    let rain3h;
+    let snow1h;
+    let snow3h;
+    let precipitation1h;
+    let precipitation3h;
+    if (json.rain != void 0) {
+      let rainObj = json.rain;
+      let keys = Object.keys(rainObj);
+      let values = Object.values(rainObj);
+      if (keys[0] === "1h") {
+        rain1h = values[0];
+      } else if (keys[0] === "3h") {
+        rain3h = values[0];
+      }
+      if (keys.length > 1) {
+        if (keys[1] === "1h") {
+          rain1h = values[1];
+        } else if (keys[1] === "3h") {
+          rain3h = values[1];
+        }
+      }
+    } else {
+      rain1h = 0;
+      rain3h = 0;
+    }
+    if (rain1h === void 0) {
+      rain1h = 0;
+    }
+    ;
+    if (rain3h === void 0) {
+      rain3h = 0;
+    }
+    ;
+    if (json.snow != void 0) {
+      let snowObj = json.snow;
+      let keys = Object.keys(snowObj);
+      let values = Object.values(snowObj);
+      if (keys[0] === "1h") {
+        snow1h = values[0];
+      } else if (keys[0] === "3h") {
+        snow3h = values[0];
+      }
+      if (keys.length > 1) {
+        if (keys[1] === "1h") {
+          snow1h = values[1];
+        } else if (keys[1] === "3h") {
+          snow3h = values[1];
+        }
+      }
+    } else {
+      snow1h = 0;
+      snow3h = 0;
+    }
+    if (snow1h === void 0) {
+      snow1h = 0;
+    }
+    ;
+    if (snow3h === void 0) {
+      snow3h = 0;
+    }
+    ;
+    precipitation1h = rain1h || snow1h;
+    precipitation3h = rain3h || snow3h;
     let dt = json.dt;
     let a = new Date(dt * 1e3);
     const months1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
@@ -152,6 +218,13 @@ var FormatWeather = class {
       "windSpeed": windSpeed,
       "windDirection": windDirection,
       "windGust": windGust,
+      "clouds": clouds,
+      "rain1h": rain1h,
+      "rain3h": rain3h,
+      "snow1h": snow1h,
+      "snow3h": snow3h,
+      "precipitation1h": precipitation1h,
+      "precipitation3h": precipitation3h,
       "year1": year1,
       "year2": year2,
       "month1": month1,
@@ -170,42 +243,49 @@ var FormatWeather = class {
       "sunset": sunset,
       "name": name
     };
-    weatherString = this.format.replace(/%desc%/g, weatherData.conditions);
-    weatherString = weatherString.replace(/%icon%/g, `<img src=${weatherData.icon} />`);
-    weatherString = weatherString.replace(/%temp%/g, weatherData.temp);
-    weatherString = weatherString.replace(/%feels%/g, weatherData.feelsLike);
-    weatherString = weatherString.replace(/%tempmin%/g, weatherData.tempMin);
-    weatherString = weatherString.replace(/%tempmax%/g, weatherData.tempMax);
-    weatherString = weatherString.replace(/%pressure%/g, weatherData.pressure);
-    weatherString = weatherString.replace(/%humidity%/g, weatherData.humidity);
-    weatherString = weatherString.replace(/%pressure-sl%/g, weatherData.seaLevel);
-    weatherString = weatherString.replace(/%pressure-gl%/g, weatherData.groundLevel);
-    weatherString = weatherString.replace(/%visibility%/g, weatherData.visibility);
-    weatherString = weatherString.replace(/%wind-speed%/g, weatherData.windSpeed);
-    weatherString = weatherString.replace(/%wind-dir%/g, weatherData.windDirection);
+    weatherString = this.format.replace(/%desc%/gmi, weatherData.conditions);
+    weatherString = weatherString.replace(/%icon%/gmi, `<img src=${weatherData.icon} />`);
+    weatherString = weatherString.replace(/%temp%/gmi, weatherData.temp);
+    weatherString = weatherString.replace(/%feels%/gmi, weatherData.feelsLike);
+    weatherString = weatherString.replace(/%tempmin%/gmi, weatherData.tempMin);
+    weatherString = weatherString.replace(/%tempmax%/gmi, weatherData.tempMax);
+    weatherString = weatherString.replace(/%pressure%/gmi, weatherData.pressure);
+    weatherString = weatherString.replace(/%humidity%/gmi, weatherData.humidity);
+    weatherString = weatherString.replace(/%pressure-sl%/gmi, weatherData.seaLevel);
+    weatherString = weatherString.replace(/%pressure-gl%/gmi, weatherData.groundLevel);
+    weatherString = weatherString.replace(/%visibility%/gmi, weatherData.visibility);
+    weatherString = weatherString.replace(/%wind-speed%/gmi, weatherData.windSpeed);
+    weatherString = weatherString.replace(/%wind-dir%/gmi, weatherData.windDirection);
     if (weatherData.windGust == "N/A") {
-      weatherString = weatherString.replace(/\^.+\^/g, "");
+      weatherString = weatherString.replace(/\^.+\^/gmi, "");
     } else {
-      weatherString = weatherString.replace(/%wind-gust%/g, weatherData.windGust);
-      weatherString = weatherString.replace(/\^(.+)\^/g, "$1");
+      weatherString = weatherString.replace(/%wind-gust%/gmi, weatherData.windGust);
+      weatherString = weatherString.replace(/\^(.+)\^/gmi, "$1");
     }
-    weatherString = weatherString.replace(/%dateYear1%/g, `${weatherData.year1}`);
-    weatherString = weatherString.replace(/%dateYear2%/g, `${weatherData.year2}`);
-    weatherString = weatherString.replace(/%dateMonth1%/g, `${weatherData.month1}`);
-    weatherString = weatherString.replace(/%dateMonth2%/g, `${weatherData.month2}`);
-    weatherString = weatherString.replace(/%dateMonth3%/g, `${weatherData.month3}`);
-    weatherString = weatherString.replace(/%dateMonth4%/g, `${weatherData.month4}`);
-    weatherString = weatherString.replace(/%dateDay1%/g, `${weatherData.date1}`);
-    weatherString = weatherString.replace(/%dateDay2%/g, `${weatherData.date2}`);
-    weatherString = weatherString.replace(/%ampm1%/g, `${weatherData.ampm1}`);
-    weatherString = weatherString.replace(/%ampm2%/g, `${weatherData.ampm2}`);
-    weatherString = weatherString.replace(/%timeH1%/g, `${weatherData.hour1}`);
-    weatherString = weatherString.replace(/%timeH2%/g, `${weatherData.hour2}`);
-    weatherString = weatherString.replace(/%timeM%/g, `${weatherData.min}`);
-    weatherString = weatherString.replace(/%timeS%/g, `${weatherData.sec}`);
-    weatherString = weatherString.replace(/%sunrise%/g, `${weatherData.sunrise}`);
-    weatherString = weatherString.replace(/%sunset%/g, `${weatherData.sunset}`);
-    weatherString = weatherString.replace(/%name%/g, `${weatherData.name}`);
+    weatherString = weatherString.replace(/%clouds%/gmi, `${weatherData.clouds}`);
+    weatherString = weatherString.replace(/%rain1h%/gmi, `${weatherData.rain1h}`);
+    weatherString = weatherString.replace(/%rain3h%/gmi, `${weatherData.rain3h}`);
+    weatherString = weatherString.replace(/%snow1h%/gmi, `${weatherData.snow1h}`);
+    weatherString = weatherString.replace(/%snow3h%/gmi, `${weatherData.snow3h}`);
+    weatherString = weatherString.replace(/%precipitation1h%/gmi, `${weatherData.precipitation1h}`);
+    weatherString = weatherString.replace(/%precipitation3h%/gmi, `${weatherData.precipitation3h}`);
+    weatherString = weatherString.replace(/%dateYear1%/gmi, `${weatherData.year1}`);
+    weatherString = weatherString.replace(/%dateYear2%/gmi, `${weatherData.year2}`);
+    weatherString = weatherString.replace(/%dateMonth1%/gmi, `${weatherData.month1}`);
+    weatherString = weatherString.replace(/%dateMonth2%/gmi, `${weatherData.month2}`);
+    weatherString = weatherString.replace(/%dateMonth3%/gmi, `${weatherData.month3}`);
+    weatherString = weatherString.replace(/%dateMonth4%/gmi, `${weatherData.month4}`);
+    weatherString = weatherString.replace(/%dateDay1%/gmi, `${weatherData.date1}`);
+    weatherString = weatherString.replace(/%dateDay2%/gmi, `${weatherData.date2}`);
+    weatherString = weatherString.replace(/%ampm1%/gmi, `${weatherData.ampm1}`);
+    weatherString = weatherString.replace(/%ampm2%/gmi, `${weatherData.ampm2}`);
+    weatherString = weatherString.replace(/%timeH1%/gmi, `${weatherData.hour1}`);
+    weatherString = weatherString.replace(/%timeH2%/gmi, `${weatherData.hour2}`);
+    weatherString = weatherString.replace(/%timeM%/gmi, `${weatherData.min}`);
+    weatherString = weatherString.replace(/%timeS%/gmi, `${weatherData.sec}`);
+    weatherString = weatherString.replace(/%sunrise%/gmi, `${weatherData.sunrise}`);
+    weatherString = weatherString.replace(/%sunset%/gmi, `${weatherData.sunset}`);
+    weatherString = weatherString.replace(/%name%/gmi, `${weatherData.name}`);
     return weatherString;
   }
   async getWeatherString() {
@@ -351,6 +431,11 @@ var OpenWeather = class extends import_obsidian.Plugin {
         await this.replaceTemplateStrings();
         await this.updateCurrentWeatherDiv();
       }
+    }));
+    this.registerEvent(this.app.workspace.on("layout-change", async () => {
+      await new Promise((r) => setTimeout(r, 2e3));
+      await this.replaceTemplateStrings();
+      await this.updateCurrentWeatherDiv();
     }));
     this.registerEvent(this.app.metadataCache.on("resolved", async () => {
       await this.replaceTemplateStrings();

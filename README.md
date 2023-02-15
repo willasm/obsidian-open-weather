@@ -103,6 +103,13 @@ These macros contained within the weather string will be replaced with the appro
 - Sunrise `%sunrise%` - 08:30:30 (24 hour format)
 - Sunset `%sunset%` - 19:30:30 (24 hour format)
 - City Name `%name%` - Eg. Edmonton
+- Cloud coverage `%clouds%` (Percentage)
+- Rain past 1 hour `%rain1h%` (in millimeters)
+- Rain past 3 hours `%rain3h%` (in millimeters)
+- Snow past 1 hour `%snow1h%` (in millimeters)
+- Snow past 3 hours `%snow3h%` (in millimeters)
+- Precipitation past 1 hour `%precipitation1h%` (in millimeters - Rain or Snow)
+- Precipitation past 3 hours `%precipitation3h%` (in millimeters - Rain or Snow)
 - (Date & Time) - The date & time of the most recent data information that OpenWeather API has available
   - year1 `%dateYear1%` - 2022
   - year2 `%dateYear2%` - 22
