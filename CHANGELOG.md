@@ -11,6 +11,16 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
+## [1.2.0] 2022-03-02
+### Added
+- Cloud coverage %clouds% (Percentage)
+- Rain past 1 hour %rain1h% (in millimeters)
+- Rain past 3 hours %rain3h% (in millimeters)
+- Snow past 1 hour %snow1h% (in millimeters)
+- Snow past 3 hours %snow3h% (in millimeters)
+- Precipitation past 1 hour %precipitation1h% (in millimeters - Rain or Snow)
+- Precipitation past 3 hours %precipitation3h% (in millimeters - Rain or Snow)
+
 ## [1.1.0] 2022-02-07
 ### Added
 - Now runs on mobile (Display weather in statusbar is disabled)

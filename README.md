@@ -21,17 +21,17 @@
 ![Format One](/images/Format1-1.png)
 
 #### **Weather Format String Two**
-`'%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n'`
+`'%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n'`
 
 ![Format Two](/images/Format2-1.png)
 
 #### **Weather Format String Three**
-`'%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%'`
+`'%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%'`
 
 ![Format Three](/images/Format3-1.png)
 
 #### **Weather Format String Four**
-`'%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% Km/h from the %wind-dir%^ with gusts up to %wind-gust% Km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%'`
+`'%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%'`
 
 ![Format Four](/images/Format4-1.png)
 
@@ -97,7 +97,7 @@ These macros contained within the weather string will be replaced with the appro
 - Pressure at Sea Level `%pressure-sl%`
 - Pressure at Ground Level `%pressure-gl%`
 - Visibility `%visibility%`
-- Wind Speed `%wind-speed%` - Km/h for Metric, Mp/h for Imperial
+- Wind Speed `%wind-speed%` - km/h for Metric, mph for Imperial
 - Wind Direction `%wind-dir%` - Eg. Northwest
 - Wind Gust `%wind-gust%` - See note below
 - Sunrise `%sunrise%` - 08:30:30 (24 hour format)
@@ -131,9 +131,9 @@ These macros contained within the weather string will be replaced with the appro
 
   - `%wind-gust%` This data is only returned by the API if the condition exists. To make this data optional within your string you can surround it with the caret symbols.
 
-  - For example: `Winds %wind-speed% Km/h^ with gusts up to %wind-gust% Km/h^`
-  - With wind gust data this will convert to: `Winds 10 Km/h with gusts up to 20 Km/h`
-  - Without wind gust data this will convert to: `Winds 10 Km/h` (The gusts text surrounded by carets will be removed)
+  - For example: `Winds %wind-speed% km/h^ with gusts up to %wind-gust% km/h^`
+  - With wind gust data this will convert to: `Winds 10 km/h with gusts up to 20 km/h`
+  - Without wind gust data this will convert to: `Winds 10 km/h` (The gusts text surrounded by carets will be removed)
 
 ## OpenWeather Plugin Commands
 

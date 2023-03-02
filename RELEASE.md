@@ -2,17 +2,19 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
-## [1.1.0] 2022-02-07
+## [1.2.0] 2022-03-02
 ### Added
-- Now runs on mobile (Display weather in statusbar is disabled)
-- New setting `Exclude Folder` which will exclude a folder from automatic template strings replacement (set this to your templates folder so it does not replace the strings in your template)
-
-### Fixed
-- Dynamic weather in DIV's should be shown more reliably
+- Cloud coverage %clouds% (Percentage)
+- Rain past 1 hour %rain1h% (in millimeters)
+- Rain past 3 hours %rain3h% (in millimeters)
+- Snow past 1 hour %snow1h% (in millimeters)
+- Snow past 3 hours %snow3h% (in millimeters)
+- Precipitation past 1 hour %precipitation1h% (in millimeters - Rain or Snow)
+- Precipitation past 3 hours %precipitation3h% (in millimeters - Rain or Snow)
 
 
 For a full list of changes, please see the projects [Changelog](CHANGELOG.md) file.
 
-I hope you enjoy using the Extension, and if you find any bugs, or would like to see a certain feature added, please feel free to contact me.
+I hope you enjoy using the Plugin, and if you find any bugs, or would like to see a certain feature added, please feel free to contact me.
 
 Enjoy! William
