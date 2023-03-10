@@ -11,6 +11,10 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
+## [1.3.0] 2022-03-10
+### Fixed
+- removed obsidian from ID
+
 ## [1.2.0] 2022-03-02
 ### Added
 - Cloud coverage %clouds% (Percentage)
