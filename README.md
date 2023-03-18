@@ -66,6 +66,9 @@ Note: You will need to verify your email address, then your API key will be emai
 #### **Units of Measurement**
 Standard, Metric and Imperial units can be selected here. (Note: Standard is in Kelvin, not really useful in most cases)
 
+#### **Language**
+Supported languages available (46 languages total)
+
 #### **Exclude Folder**
 Folder to exclude from automatic [Template](#template-support) strings replacement. This should be set to your vaults template folder.
 

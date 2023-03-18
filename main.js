@@ -33,6 +33,7 @@ var DEFAULT_SETTINGS = {
   location: "",
   key: "",
   units: "metric",
+  language: "en",
   excludeFolder: "",
   weatherFormat1: "%desc% \u2022 Current Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\n",
   weatherFormat2: "%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% \u2022 Sunset: %sunset%\n",
@@ -43,16 +44,17 @@ var DEFAULT_SETTINGS = {
   statusbarUpdateFreq: "15"
 };
 var FormatWeather = class {
-  constructor(location, key, units, format) {
+  constructor(location, key, units, language, format) {
     this.location = location;
     this.key = key;
     this.units = units;
+    this.language = language;
     this.format = format;
   }
   async getWeather() {
     let weatherData;
     let weatherString;
-    let url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&appid=${this.key}&units=${this.units}`;
+    let url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
     let req = await fetch(url);
     let json = await req.json();
     let conditions = json.weather[0].description;
@@ -311,7 +313,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
         new import_obsidian.Notice("Open a Markdown file first.");
         return;
       }
-      new InsertWeatherPicker(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
+      new InsertWeatherPicker(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
     });
     this.statusBar = this.addStatusBarItem();
     if (this.settings.statusbarActive) {
@@ -323,7 +325,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -340,7 +342,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       editorCallback: async (editor, view) => {
         if (this.settings.weatherFormat1.length > 0) {
           if (view.data.contains("%weather1%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -352,7 +354,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
         }
         if (this.settings.weatherFormat2.length > 0) {
           if (view.data.contains("%weather2%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -364,7 +366,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
         }
         if (this.settings.weatherFormat3.length > 0) {
           if (view.data.contains("%weather3%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -376,7 +378,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
         }
         if (this.settings.weatherFormat4.length > 0) {
           if (view.data.contains("%weather4%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+            let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -393,7 +395,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       name: "Insert weather format one",
       editorCallback: async (editor, view) => {
         if (this.settings.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -410,7 +412,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       name: "Insert weather format two",
       editorCallback: async (editor, view) => {
         if (this.settings.weatherFormat2.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -427,7 +429,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       name: "Insert weather format three",
       editorCallback: async (editor, view) => {
         if (this.settings.weatherFormat3.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -444,7 +446,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       name: "Insert weather format four",
       editorCallback: async (editor, view) => {
         if (this.settings.weatherFormat4.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+          let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -483,7 +485,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       return;
     if (document.getElementsByClassName("weather_current_1").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_1")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
       let weatherStr = await wstr.getWeatherString();
       if (weatherStr.length == 0) {
         return;
@@ -493,7 +495,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (document.getElementsByClassName("weather_current_2").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_2")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
       let weatherStr = await wstr.getWeatherString();
       if (weatherStr.length == 0) {
         return;
@@ -503,13 +505,13 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (document.getElementsByClassName("weather_current_3").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_3")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
       let weatherStr = await wstr.getWeatherString();
       divEl.innerHTML = weatherStr;
     }
     if (document.getElementsByClassName("weather_current_4").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_4")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+      let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
       let weatherStr = await wstr.getWeatherString();
       if (weatherStr.length == 0) {
         return;
@@ -530,7 +532,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       return;
     if (this.settings.weatherFormat1.length > 0) {
       if (editor.contains("%weather1%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat1);
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -542,7 +544,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (this.settings.weatherFormat2.length > 0) {
       if (editor.contains("%weather2%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat2);
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -554,7 +556,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (this.settings.weatherFormat3.length > 0) {
       if (editor.contains("%weather3%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat3);
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -566,7 +568,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (this.settings.weatherFormat4.length > 0) {
       if (editor.contains("%weather4%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormat4);
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -586,7 +588,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.weatherFormatSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -609,11 +611,12 @@ var OpenWeather = class extends import_obsidian.Plugin {
 };
 var ALL_COMMANDS = [];
 var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
-  constructor(location, key, units, weatherFormat1, weatherFormat2, weatherFormat3, weatherFormat4) {
+  constructor(location, key, units, language, weatherFormat1, weatherFormat2, weatherFormat3, weatherFormat4) {
     super(app);
     this.location = location;
     this.key = key;
     this.units = units;
+    this.language = language;
     this.weatherFormat1 = weatherFormat1;
     this.weatherFormat2 = weatherFormat2;
     this.weatherFormat3 = weatherFormat3;
@@ -626,7 +629,7 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
       const md = view;
       if (md.getMode() === "source") {
         if (this.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather(this.location, this.key, this.units, this.weatherFormat1);
+          let wstr = new FormatWeather(this.location, this.key, this.units, this.language, this.weatherFormat1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat1 = weatherStr;
@@ -637,7 +640,7 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
           }
         }
         if (this.weatherFormat2.length > 0) {
-          let wstr = new FormatWeather(this.location, this.key, this.units, this.weatherFormat2);
+          let wstr = new FormatWeather(this.location, this.key, this.units, this.language, this.weatherFormat2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat2 = weatherStr;
@@ -648,7 +651,7 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
           }
         }
         if (this.weatherFormat3.length > 0) {
-          let wstr = new FormatWeather(this.location, this.key, this.units, this.weatherFormat3);
+          let wstr = new FormatWeather(this.location, this.key, this.units, this.language, this.weatherFormat3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat3 = weatherStr;
@@ -659,7 +662,7 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
           }
         }
         if (this.weatherFormat4.length > 0) {
-          let wstr = new FormatWeather(this.location, this.key, this.units, this.weatherFormat4);
+          let wstr = new FormatWeather(this.location, this.key, this.units, this.language, this.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat4 = weatherStr;
@@ -757,6 +760,59 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.saveSettings();
         await this.plugin.updateWeather();
       }).setValue(this.plugin.settings.units);
+    });
+    new import_obsidian.Setting(containerEl).setName("Language").setDesc("Supported languages available").addDropdown((dropDown) => {
+      dropDown.addOption("af", "Afrikaans");
+      dropDown.addOption("al", "Albanian");
+      dropDown.addOption("ar", "Arabic");
+      dropDown.addOption("az", "Azerbaijani");
+      dropDown.addOption("bg", "Bulgarian");
+      dropDown.addOption("ca", "Catalan");
+      dropDown.addOption("cz", "Czech");
+      dropDown.addOption("da", "Danish");
+      dropDown.addOption("de", "German");
+      dropDown.addOption("el", "Greek");
+      dropDown.addOption("en", "English");
+      dropDown.addOption("eu", "Basque");
+      dropDown.addOption("fa", "Persian (Farsi)");
+      dropDown.addOption("fi", "Finnish");
+      dropDown.addOption("fr", "French");
+      dropDown.addOption("gl", "Galician");
+      dropDown.addOption("he", "Hebrew");
+      dropDown.addOption("hi", "Hindi");
+      dropDown.addOption("hr", "Croatian");
+      dropDown.addOption("hu", "Hungarian");
+      dropDown.addOption("id", "Indonesian");
+      dropDown.addOption("it", "Italian");
+      dropDown.addOption("ja", "Japanese");
+      dropDown.addOption("kr", "Korean");
+      dropDown.addOption("la", "Latvian");
+      dropDown.addOption("lt", "Lithuanian");
+      dropDown.addOption("mk", "Macedonian");
+      dropDown.addOption("no", "Norwegian");
+      dropDown.addOption("nl", "Dutch");
+      dropDown.addOption("pl", "Polish");
+      dropDown.addOption("pt", "Portuguese");
+      dropDown.addOption("pt_br", "Portugu\xEAs Brasil");
+      dropDown.addOption("ro", "Romanian");
+      dropDown.addOption("ru", "Russian");
+      dropDown.addOption("sv", "Swedish");
+      dropDown.addOption("sk", "Slovak");
+      dropDown.addOption("sl", "Slovenian");
+      dropDown.addOption("sp", "Spanish");
+      dropDown.addOption("sr", "Serbian");
+      dropDown.addOption("th", "Thai");
+      dropDown.addOption("tr", "Turkish");
+      dropDown.addOption("ua", "Ukrainian");
+      dropDown.addOption("vi", "Vietnamese");
+      dropDown.addOption("zh_cn", "Chinese Simplified");
+      dropDown.addOption("zh_tw", "Chinese Traditional");
+      dropDown.addOption("zu", "Zulu");
+      dropDown.onChange(async (value) => {
+        this.plugin.settings.language = value;
+        await this.plugin.saveSettings();
+        await this.plugin.updateWeather();
+      }).setValue(this.plugin.settings.language);
     });
     containerEl.createEl("br");
     containerEl.createEl("h2", { text: "Folder to Exclude From Automatic Template Strings Replacement" });
