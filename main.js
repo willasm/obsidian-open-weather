@@ -58,6 +58,38 @@ var FormatWeather = class {
     let req = await fetch(url);
     let json = await req.json();
     let conditions = json.weather[0].description;
+    let id = json.weather[0].id;
+    let conditionsEm = "";
+    if (id > 199 && id < 300) {
+      conditionsEm = "\u26C8\uFE0F";
+    }
+    if (id > 299 && id < 500) {
+      conditionsEm = "\u{1F326}\uFE0F";
+    }
+    if (id > 499 && id < 600) {
+      conditionsEm = "\u{1F327}\uFE0F";
+    }
+    if (id > 599 && id < 700) {
+      conditionsEm = "\u2744\uFE0F";
+    }
+    if (id > 699 && id < 800) {
+      conditionsEm = "\u{1F32B}\uFE0F";
+    }
+    if (id == 771) {
+      conditionsEm = "\u{1F300}";
+    }
+    if (id == 781) {
+      conditionsEm = "\u{1F32A}\uFE0F";
+    }
+    if (id == 800) {
+      conditionsEm = "\u{1F506}";
+    }
+    if (id > 800 && id < 804) {
+      conditionsEm = "\u{1F325}\uFE0F";
+    }
+    if (id == 804) {
+      conditionsEm = "\u2601\uFE0F";
+    }
     conditions = conditions.replace(/^\w|\s\w/g, (c2) => c2.toUpperCase());
     let iconName = json.weather[0].icon;
     const iconApi = await fetch("http://openweathermap.org/img/w/" + iconName + ".png");
@@ -206,6 +238,7 @@ var FormatWeather = class {
     weatherData = {
       "status": "ok",
       "conditions": conditions,
+      "conditionsEm": conditionsEm,
       "icon": iconUrl,
       "temp": temp,
       "feelsLike": feelsLike,
@@ -245,6 +278,7 @@ var FormatWeather = class {
       "name": name
     };
     weatherString = this.format.replace(/%desc%/gmi, weatherData.conditions);
+    weatherString = weatherString.replace(/%desc-em%/gmi, weatherData.conditionsEm);
     weatherString = weatherString.replace(/%icon%/gmi, `<img src=${weatherData.icon} />`);
     weatherString = weatherString.replace(/%temp%/gmi, weatherData.temp);
     weatherString = weatherString.replace(/%feels%/gmi, weatherData.feelsLike);

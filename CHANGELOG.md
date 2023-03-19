@@ -11,6 +11,11 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
+## [1.5.0] 2022-03-18
+### Added
+- Weather Description Emojis
+  - Macro `%desc-em%` will be replaced with an emoji of the current weather description
+
 ## [1.4.0] 2022-03-18
 ### Added
 - Language support for the following languages

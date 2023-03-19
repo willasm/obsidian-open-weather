@@ -89,7 +89,8 @@ Time interval to update the weather displayed in the statusbar and [DIV's](#div-
 ## Weather String Placeholders
 These macros contained within the weather string will be replaced with the appropiate data.
 
-- Weather Description `%desc%`
+- Weather Description Text `%desc%`
+- Weather Description Emoji `%desc-em%`
 - Weather Icon `%icon%` - See note below
 - Current Temperature `%temp%`
 - Feels Like `%feels%`
