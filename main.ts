@@ -575,7 +575,14 @@ export default class OpenWeather extends Plugin {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) return;
     const file = app.workspace.getActiveFile();
-    if (view.file.parent.path === this.settings.excludeFolder) return;    // Ignore this folder for Template String Replacement
+//    if (view.file.parent.path === this.settings.excludeFolder) return;    // Ignore this folder for Template String Replacement
+    // let filePath = view.file.path
+    // let excPath = this.settings.excludeFolder
+    // if (filePath.includes(excPath)) {
+    //   console.log("Path Ignored",filePath);
+    //   return;
+    // }
+    if (view.file.parent.path.includes(this.settings.excludeFolder)) return;    // Ignore this folder and any subfolders for Template String Replacement
     let editor = view.getViewData();
     if (editor == null) return;
     if (this.settings.weatherFormat1.length > 0) {

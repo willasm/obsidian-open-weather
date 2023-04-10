@@ -559,7 +559,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
     if (!view)
       return;
     const file = app.workspace.getActiveFile();
-    if (view.file.parent.path === this.settings.excludeFolder)
+    if (view.file.parent.path.includes(this.settings.excludeFolder))
       return;
     let editor = view.getViewData();
     if (editor == null)
