@@ -70,7 +70,7 @@ Standard, Metric and Imperial units can be selected here. (Note: Standard is in 
 Supported languages available (46 languages total)
 
 #### **Exclude Folder**
-Folder to exclude from automatic [Template](#template-support) strings replacement. This should be set to your vaults template folder.
+Folder to exclude from automatic [Template](#template-support) strings replacement. This should be set to your vaults template folder. The exclusion includes any subfolders within the selected folder.
 
 #### **Weather Strings Formatting**
 Define your weather strings here (Up to 4 strings are available)

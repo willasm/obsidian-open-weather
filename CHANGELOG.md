@@ -10,13 +10,17 @@
 -->
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
+## [1.5.1] 2023-04-11
+### Fixed
+- Selected exclude folder now excludes files in subfolders as well
+- Corrected some typos
 
-## [1.5.0] 2022-03-18
+## [1.5.0] 2023-03-18
 ### Added
 - Weather Description Emojis
   - Macro `%desc-em%` will be replaced with an emoji of the current weather description
 
-## [1.4.0] 2022-03-18
+## [1.4.0] 2023-03-18
 ### Added
 - Language support for the following languages
   - af - Afrikaans
@@ -66,11 +70,11 @@
   - zh_tw - Chinese Traditional
   - zu - Zulu
 
-## [1.3.0] 2022-03-10
+## [1.3.0] 2023-03-10
 ### Fixed
 - removed obsidian from ID
 
-## [1.2.0] 2022-03-02
+## [1.2.0] 2023-03-02
 ### Added
 - Cloud coverage %clouds% (Percentage)
 - Rain past 1 hour %rain1h% (in millimeters)
@@ -80,7 +84,7 @@
 - Precipitation past 1 hour %precipitation1h% (in millimeters - Rain or Snow)
 - Precipitation past 3 hours %precipitation3h% (in millimeters - Rain or Snow)
 
-## [1.1.0] 2022-02-07
+## [1.1.0] 2023-02-07
 ### Added
 - Now runs on mobile (Display weather in statusbar is disabled)
 - New setting `Exclude Folder` which will exclude a folder from automatic template strings replacement (set this to your templates folder so it does not replace the strings in your template)

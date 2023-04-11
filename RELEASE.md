@@ -2,10 +2,10 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
-## [1.5.0] 2022-03-18
-### Added
-- Weather Description Emojis
-  - Macro `%desc-em%` will be replaced with an emoji of the current weather description
+## [1.5.1] 2023-04-11
+### Fixed
+- Selected exclude folder now excludes files in subfolders as well
+- Corrected some typos
 
 
 For a full list of changes, please see the projects [Changelog](CHANGELOG.md) file.
