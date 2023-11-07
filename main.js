@@ -108,6 +108,7 @@ var FormatWeather = class {
     let groundLevel = json.main.grnd_level;
     let visibility = json.visibility;
     let windSpeed = json.wind.speed;
+    let windSpeedms = json.wind.speed;
     if (this.units == "metric") {
       windSpeed = Math.round(windSpeed * 3.6);
     } else {
@@ -250,6 +251,7 @@ var FormatWeather = class {
       "groundLevel": groundLevel,
       "visibility": visibility,
       "windSpeed": windSpeed,
+      "windSpeedms": windSpeedms,
       "windDirection": windDirection,
       "windGust": windGust,
       "clouds": clouds,
@@ -290,6 +292,7 @@ var FormatWeather = class {
     weatherString = weatherString.replace(/%pressure-gl%/gmi, weatherData.groundLevel);
     weatherString = weatherString.replace(/%visibility%/gmi, weatherData.visibility);
     weatherString = weatherString.replace(/%wind-speed%/gmi, weatherData.windSpeed);
+    weatherString = weatherString.replace(/%wind-speed-ms%/gmi, weatherData.windSpeedms);
     weatherString = weatherString.replace(/%wind-dir%/gmi, weatherData.windDirection);
     if (weatherData.windGust == "N/A") {
       weatherString = weatherString.replace(/\^.+\^/gmi, "");
