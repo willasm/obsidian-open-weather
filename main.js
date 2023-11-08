@@ -331,7 +331,6 @@ var FormatWeather = class {
       let weatherString = await this.getWeather();
       return weatherString;
     } catch (error) {
-      new import_obsidian.Notice("Failed to fetch weather data\n" + error, 5e3);
       let weatherString = "";
       return weatherString;
     }

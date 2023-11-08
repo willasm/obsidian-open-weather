@@ -2,10 +2,11 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
-## [1.5.1] 2023-04-11
+## [1.6.0] 2023-11-07
+### Added
+- New macro for wind speed in meters per second %wind-speed-ms%
 ### Fixed
-- Selected exclude folder now excludes files in subfolders as well
-- Corrected some typos
+- "Failed to fetch weather data TypeError: Cannot read properties of undefined (reading '0')" while entering location in settings 
 
 
 For a full list of changes, please see the projects [Changelog](CHANGELOG.md) file.

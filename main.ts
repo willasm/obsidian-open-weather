@@ -339,7 +339,7 @@ class FormatWeather {
       let weatherString = await this.getWeather();
       return weatherString;
     } catch (error) {
-      new Notice("Failed to fetch weather data\n"+error,5000);
+      //new Notice("Failed to fetch weather data\n"+error,5000);
       let weatherString = "";
       return weatherString;
     }
@@ -1080,9 +1080,9 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         })
       .setValue(this.plugin.settings.statusbarUpdateFreq)
       });
-
+      
+    }
   }
-}
 
 // Weather Placeholders
 // ====================
@@ -1098,6 +1098,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
 // main.grnd_level %pressure-gl%
 // visibility %visibility%
 // wind.speed %wind-speed%
+// wind.speedms %wind-speed-ms%
 // wind.deg %wind-deg%
 // wind.gust %wind-gust%
 // dt (date time) %date% %time%

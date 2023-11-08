@@ -68,6 +68,7 @@ Standard, Metric and Imperial units can be selected here. (Note: Standard is in 
 
 #### **Language**
 Supported languages available (46 languages total)
+Note: This only applies to certain keywords that are returned by the Open Weather API. This does not change the text in the defined weather strings. If you want the text in the default weather strings in another language you will need to edit them directly in the settings.
 
 #### **Exclude Folder**
 Folder to exclude from automatic [Template](#template-support) strings replacement. This should be set to your vaults template folder. The exclusion includes any subfolders within the selected folder.
@@ -102,6 +103,7 @@ These macros contained within the weather string will be replaced with the appro
 - Pressure at Ground Level `%pressure-gl%`
 - Visibility `%visibility%`
 - Wind Speed `%wind-speed%` - km/h for Metric, mph for Imperial
+- Wind Speed `%wind-speed-ms%` - m/s (Meters per second)
 - Wind Direction `%wind-dir%` - Eg. Northwest
 - Wind Gust `%wind-gust%` - See note below
 - Sunrise `%sunrise%` - 08:30:30 (24 hour format)
@@ -133,11 +135,11 @@ These macros contained within the weather string will be replaced with the appro
 - ### Weather Placeholder notes
   - `%Icon%` - This is replaced with the image tag `<img src={Icon Url} />` This is more useful if it is embedded inside a [div](#div-support) code block.
 
-  - `%wind-gust%` This data is only returned by the API if the condition exists. To make this data optional within your string you can surround it with the caret symbols.
+  - `%wind-gust%` This data is only returned by the API if the condition exists. To make this display the string data only when it exists you can surround it with the caret symbols.
 
   - For example: `Winds %wind-speed% km/h^ with gusts up to %wind-gust% km/h^`
   - With wind gust data this will convert to: `Winds 10 km/h with gusts up to 20 km/h`
-  - Without wind gust data this will convert to: `Winds 10 km/h` (The gusts text surrounded by carets will be removed)
+  - Without wind gust data this will convert to: `Winds 10 km/h` (The text surrounded by carets will be removed)
 
 ## OpenWeather Plugin Commands
 
