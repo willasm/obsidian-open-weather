@@ -161,58 +161,25 @@ You can place the following strings in your templates and when creating a new do
 - `%weather4%` - Inserts weather string format Four
 
 ## DIV support
-You can insert the following DIV inside your documents to provide dynamic weather which is updated at the frequency set in the [settings _Update Frequency_](#update-frequency) setting. See [EXAMPLE.md](EXAMPLE.md) for a demonstration of how I use these in my Daily Template.
+You can insert the following DIV inside your documents to provide dynamic weather which is updated at the frequency set in the [settings _Update Frequency_](#update-frequency) setting. The `weather_historical_3` is the static temperature at the time the document is created and the `weather_current_1` is dynamic. See [EXAMPLE.md](EXAMPLE.md) for a demonstration of how I use these in my Daily Template.
 
 
 ```html
+<div class="weather_historical_3">%weather3%</div>
 <div class="weather_current_1"></div>
 ```
 
 You can use the following class's to insert the corresponding weather string formats
 
-- "weather_current_1" Inserts weather string format One
-- "weather_current_2" Inserts weather string format Two
-- "weather_current_3" Inserts weather string format Three
-- "weather_current_4" Inserts weather string format Four
+- "weather_current_1" Inserts dynamic weather string format One
+- "weather_current_2" Inserts dynamic weather string format Two
+- "weather_current_3" Inserts dynamic weather string format Three
+- "weather_current_4" Inserts dynamic weather string format Four
 
-### Important Note:
-This also requires you to add the following line to the frontmatter of the note you want to display the current weather in...
+and...
 
-```
----
-cssclass: openweather
----
-```
-Then add the following css snippet, (name it 'openweather.css' or whatever you prefer), to your vaults snippet folder `vault-name/.obsidian/snippets` (create the snippets folder if it does not exist already)...
+- "weather_historical_1" Inserts static weather string format One
+- "weather_historical_2" Inserts static weather string format Two
+- "weather_historical_3" Inserts static weather string format Three
+- "weather_historical_4" Inserts static weather string format Four
 
-Don't forget to enable the snippet in settings/appearance (at the bottom).
-
-Feel free to modify this snippet to achieve the layout you desire...
-
-
-```css
-.openweather {
-    padding-left: 25px !important;
-    padding-right: 25px !important;
-    padding-top: 20px !important;
-}
-
-/* Current weather One, Two, Three and Four settings */
-/* These are not necessary but demonstrate how to style the weather string */
-.weather_current_1, .weather_current_2, .weather_current_3, .weather_current_4 {
-    display: flex;
-    float: left;
-    clear: left;
-    color: #c4caa5;
-    background-color: #133e2c;
-    align-items: center;
-    top: 80px;
-    left: 35px;
-    position: absolute;
-    font-family: monospace;
-    font-size: 14pt !important;
-    margin: 10px 5px;
-    padding: 10px 20px;
-    box-shadow: 3px 3px 2px #414654;
-}
-```

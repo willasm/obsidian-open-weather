@@ -2,11 +2,11 @@
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
 
-## [1.6.0] 2023-11-07
+## [1.6.1] 2024-01-13
 ### Added
-- New macro for wind speed in meters per second %wind-speed-ms%
-### Fixed
-- "Failed to fetch weather data TypeError: Cannot read properties of undefined (reading '0')" while entering location in settings 
+- The files `Daily Note.md` and `dailyNote.css` used in `EXAMPLE.md` file
+### Updated
+- The documentation in the `EXAMPLE.md` document has been updated
 
 
 For a full list of changes, please see the projects [Changelog](CHANGELOG.md) file.

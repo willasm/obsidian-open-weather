@@ -1,0 +1,160 @@
+/*====================*/
+/* Daily Note Styling */
+/*====================*/
+.daily {
+    padding-left: 25px !important;
+    padding-right: 25px !important;
+    padding-top: 20px !important;
+}
+
+/* Transition Effect Weather One */
+.weather_current_1,
+.weather_historical_1 {
+  transition: 0.3s;
+}
+
+/* Transition Effect Weather Two */
+.weather_current_2,
+.weather_historical_2 {
+  transition: 0.3s;
+}
+
+/* Transition Effect Weather Three */
+.weather_current_3,
+.weather_historical_3 {
+  transition: 0.3s;
+}
+
+/* Transition Effect Weather Four */
+.weather_current_4,
+.weather_historical_4 {
+  transition: 0.3s;
+}
+
+/* Historical & Current weather One, Two, Three and Four common settings */
+.weather_historical_1, .weather_current_1, .weather_historical_2, .weather_current_2, .weather_historical_3, .weather_current_3, .weather_historical_4, .weather_current_4 {
+    display: flex;
+    float: left;
+    clear: left;
+    align-items: center;
+    top: 45px;
+    left: 55px;
+    white-space: pre;
+    position: absolute;
+    font-family: monospace;
+    font-size: 14pt !important;
+    margin: 10px 5px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 3px 3px 2px #414654;
+    cursor: pointer;
+}
+
+/* Historical weather at top of the document over banner */
+.weather_historical_1, .weather_historical_2, .weather_historical_3, .weather_historical_4 {
+    color: #d0dce9;
+    background-color: #0d3d56;
+}
+
+/* Current weather at top of the document over banner */
+.weather_current_1, .weather_current_2, .weather_current_3, .weather_current_4 {
+    color: #c4caa5;
+    background-color: #133e2c;
+    opacity: 0;
+}
+
+/* Show Current weather One on hover */
+.weather_current_1:hover {
+    opacity: 1;
+}
+
+/* Show Current weather Two on hover */
+.weather_current_2:hover {
+    opacity: 1;
+}
+
+/* Show Current weather Three on hover */
+.weather_current_3:hover {
+    opacity: 1;
+}
+
+/* Show Current weather Four on hover */
+.weather_current_4:hover {
+    opacity: 1;
+}
+
+/* Daily Note Name H6 Styling (YYYY-MM-DD) */
+.daily h6 {
+    font-size: 1.75em;
+    color: #4cbf90;
+    border-width: 1px;
+    padding-bottom: 3px;
+    text-align: center;
+}
+
+/* Daily Note Date H5 Styling (🔹 Thursday 🔹 10th November 🔹 2022 🔹) */
+.daily h5 {
+    font-size: 1.25em;
+    color: #23a49d;
+    border-width: 1px;
+    padding-bottom: 3px;
+    text-align: center;
+}
+
+/* Hide the frontmatter for Daily Notes
+.daily .frontmatter-container {
+    display: none;
+}
+ */
+
+/*==============================*/
+/* Display Daily Notes Calendar */
+/*==============================*/
+.calendar table {
+    top: 30px;
+    right: 30px;
+    position: absolute;
+    background-color: #0d3d56;
+    border-radius: 10px;
+}
+
+.calendar thead {
+	background-color: #147980;
+}
+
+.calendar th {
+    color: goldenrod !important;
+}
+
+.calendar table th:first-of-type {
+    border-top-left-radius: 6px;
+}
+.calendar table th:last-of-type {
+    border-top-right-radius: 6px;
+}
+
+.calendar .internal-link {
+	color: rgb(215, 146, 27);
+}
+
+.calendar .internal-link.is-unresolved {
+	color: silver;
+}
+
+.calendar td strong {
+    border-radius: 50%;
+    padding: 3px;
+    border: 2px solid #229ecf;
+	color: black !important;
+}
+
+.calendar mark {
+    /* color: #fd0707 !important; */
+    background: #0d3d56;
+}
+
+.calendar strong .internal-link{
+    color: #23bca5 !important;
+    /* background: #0d3d56; */
+}
+

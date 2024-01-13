@@ -10,6 +10,12 @@
 -->
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
+## [1.6.1] 2024-01-13
+### Added
+- The files `Daily Note.md` and `dailyNote.css` used in `EXAMPLE.md` file
+### Updated
+- The documentation in the `EXAMPLE.md` document has been updated
+
 ## [1.6.0] 2023-11-07
 ### Added
 - New macro for wind speed in meters per second %wind-speed-ms%
