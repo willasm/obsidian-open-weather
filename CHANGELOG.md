@@ -10,6 +10,15 @@
 -->
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
+## [1.7.0] 2024-02-18
+### Added
+- Settings for Latitude and Longitude
+  - Note that these will override the location setting when these are defined
+  - Use these if you are having issues with getting data returned for the wrong city when cities have identical names
+  - Leave them blank to use the location setting
+- The weather string placeholders `%latitude%` and `%longitude%`
+  - These values are returned from the API call and are not from the new settings for Latitude and Longitude
+
 ## [1.6.1] 2024-01-13
 ### Added
 - The files `Daily Note.md` and `dailyNote.css` used in `EXAMPLE.md` file

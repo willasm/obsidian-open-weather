@@ -4,6 +4,8 @@ let displayErrorMsg = true;
 
 interface OpenWeatherSettings {
   location: string;
+  latitude: string;
+  longitude: string;
   key: string;
   units: string;
   language: string;
@@ -19,6 +21,8 @@ interface OpenWeatherSettings {
 
 const DEFAULT_SETTINGS: OpenWeatherSettings = {
   location: '',
+  latitude: '',
+  longitude: '',
   key: '',
   units: 'metric',
   language: 'en',
@@ -39,13 +43,17 @@ const DEFAULT_SETTINGS: OpenWeatherSettings = {
 //  ╰──────────────────────────────────────────────────────────────────────────────╯
 class FormatWeather {
   location: String;
+  latitude: String;
+  longitude: String;
   key: string
   units: string
   language: string
   format: string
   
-  constructor(location: string, key: string, units: string, language: string, format: string) {
+  constructor(location: string, latitude: string, longitude: string, key: string, units: string, language: string, format: string) {
     this.location = location;
+    this.latitude = latitude;
+    this.longitude = longitude;
     this.key = key;
     this.units = units;
     this.language = language;
@@ -56,9 +64,15 @@ class FormatWeather {
   async getWeather() {
     let weatherData;
     let weatherString;
-    let url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
+    let url;
+    if (this.latitude.length > 0 && this.longitude.length > 0) {
+      url = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
+    } else {
+      url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
+    };
     let req = await fetch(url);
     let json = await req.json();
+    console.log('json:', json);
     let conditions = json.weather[0].description;
     let id = json.weather[0].id;
     let conditionsEm = '';
@@ -237,6 +251,9 @@ class FormatWeather {
     let sunset = sshour + ':' + ssmin + ':' + sssec;
     // Location Name
     let name = json.name;
+    // Latitude and Longitude
+    let latitude = json.coord.lat;
+    let longitude = json.coord.lon;
 
     // getWeather - Create weather data object 
     weatherData = {
@@ -280,7 +297,9 @@ class FormatWeather {
       "sec": sec,
       "sunrise": sunrise,
       "sunset": sunset,
-      "name": name
+      "name": name,
+      "latitude": latitude,
+      "longitude": longitude
     }
 
     // getWeather - Create Formatted weather string 
@@ -329,6 +348,8 @@ class FormatWeather {
     weatherString = weatherString.replace(/%sunrise%/gmi, `${weatherData.sunrise}`);
     weatherString = weatherString.replace(/%sunset%/gmi, `${weatherData.sunset}`);
     weatherString = weatherString.replace(/%name%/gmi, `${weatherData.name}`);
+    weatherString = weatherString.replace(/%latitude%/gmi, `${weatherData.latitude}`);
+    weatherString = weatherString.replace(/%longitude%/gmi, `${weatherData.longitude}`);
 
     return weatherString;
   }
@@ -377,7 +398,7 @@ export default class OpenWeather extends Plugin {
         new Notice("Open a Markdown file first.");
         return;
       }
-      new InsertWeatherPicker(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
+      new InsertWeatherPicker(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
     });
 
     // onload - This adds a status bar item to the bottom of the app - Does not work on mobile apps 
@@ -391,7 +412,7 @@ export default class OpenWeather extends Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         this.statusBar.setText(weatherStr);
@@ -407,7 +428,7 @@ export default class OpenWeather extends Plugin {
       editorCallback: async (editor: Editor, view: MarkdownView) => {
         if (this.settings.weatherFormat1.length > 0) {
           if (view.data.contains("%weather1%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather1%/gmi, weatherStr);
@@ -416,7 +437,7 @@ export default class OpenWeather extends Plugin {
         }
         if (this.settings.weatherFormat2.length > 0) {
           if (view.data.contains("%weather2%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather2%/gmi, weatherStr);
@@ -425,7 +446,7 @@ export default class OpenWeather extends Plugin {
         }
         if (this.settings.weatherFormat3.length > 0) {
           if (view.data.contains("%weather3%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather3%/gmi, weatherStr);
@@ -434,7 +455,7 @@ export default class OpenWeather extends Plugin {
         }
         if (this.settings.weatherFormat4.length > 0) {
           if (view.data.contains("%weather4%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather4%/gmi, weatherStr);
@@ -450,7 +471,7 @@ export default class OpenWeather extends Plugin {
       name: 'Insert weather format one',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
         if (this.settings.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -466,7 +487,7 @@ export default class OpenWeather extends Plugin {
       name: 'Insert weather format two',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
         if (this.settings.weatherFormat2.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -482,7 +503,7 @@ export default class OpenWeather extends Plugin {
       name: 'Insert weather format three',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
         if (this.settings.weatherFormat3.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -498,7 +519,7 @@ export default class OpenWeather extends Plugin {
       name: 'Insert weather format four',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
         if (this.settings.weatherFormat4.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -546,27 +567,27 @@ export default class OpenWeather extends Plugin {
     if (!view) return;
       if(document.getElementsByClassName('weather_current_1').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_1')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         divEl.innerHTML = weatherStr;
       }
       if(document.getElementsByClassName('weather_current_2').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_2')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         divEl.innerHTML = weatherStr;
       }
       if(document.getElementsByClassName('weather_current_3').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_3')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
         let weatherStr = await wstr.getWeatherString();
         divEl.innerHTML = weatherStr;
       }
       if(document.getElementsByClassName('weather_current_4').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_4')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         divEl.innerHTML = weatherStr;
@@ -583,7 +604,7 @@ export default class OpenWeather extends Plugin {
     if (editor == null) return;
     if (this.settings.weatherFormat1.length > 0) {
       if (editor.contains("%weather1%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather1%/gmi, weatherStr);
@@ -592,7 +613,7 @@ export default class OpenWeather extends Plugin {
     }
     if (this.settings.weatherFormat2.length > 0) {
       if (editor.contains("%weather2%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather2%/gmi, weatherStr);
@@ -601,7 +622,7 @@ export default class OpenWeather extends Plugin {
     }
     if (this.settings.weatherFormat3.length > 0) {
       if (editor.contains("%weather3%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather3%/gmi, weatherStr);
@@ -610,7 +631,7 @@ export default class OpenWeather extends Plugin {
     }
     if (this.settings.weatherFormat4.length > 0) {
       if (editor.contains("%weather4%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather4%/gmi, weatherStr);
@@ -629,7 +650,7 @@ export default class OpenWeather extends Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         this.statusBar.setText(weatherStr);
@@ -669,6 +690,8 @@ let ALL_COMMANDS: { command: string; format: string; }[] = [];
 
 class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherSettings{
   location: string;
+  latitude: string;
+  longitude: string;
   key: string;
   units: string;
   language: string;
@@ -684,9 +707,11 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
   command: string;
   format: string;
 
-  constructor(location: string, key: string, units: string, language: string, weatherFormat1: string, weatherFormat2: string, weatherFormat3: string, weatherFormat4: string) {
+  constructor(location: string, latitude: string, longitude: string, key: string, units: string, language: string, weatherFormat1: string, weatherFormat2: string, weatherFormat3: string, weatherFormat4: string) {
     super(app);
     this.location = location;
+    this.latitude = latitude;
+    this.longitude = longitude;
     this.key = key;
     this.units = units;
     this.language = language;
@@ -703,7 +728,7 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
       const md = view as MarkdownView;
       if (md.getMode() === 'source') {
         if (this.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather (this.location, this.key, this.units, this.language, this.weatherFormat1);
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat1 = weatherStr;
@@ -716,7 +741,7 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
           }
         }
         if (this.weatherFormat2.length > 0) {
-          let wstr = new FormatWeather (this.location, this.key, this.units, this.language, this.weatherFormat2);
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat2 = weatherStr;
@@ -729,7 +754,7 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
           }
         }
         if (this.weatherFormat3.length > 0) {
-          let wstr = new FormatWeather (this.location, this.key, this.units, this.language, this.weatherFormat3);
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat3 = weatherStr;
@@ -742,7 +767,7 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
           }
         }
         if (this.weatherFormat4.length > 0) {
-          let wstr = new FormatWeather (this.location, this.key, this.units, this.language, this.weatherFormat4);
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
             this.weatherFormat4 = weatherStr;
@@ -847,10 +872,34 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       .setName('Enter Location')
       .setDesc('Name of the city you want to retrieve weather for')
       .addText(text => text
-        .setPlaceholder('Enter city Eg. edmonton')
+        .setPlaceholder('Enter city Eg. Chicago, or South Bend, WA')
         .setValue(this.plugin.settings.location)
         .onChange(async (value) => {
           this.plugin.settings.location = value;
+          await this.plugin.saveSettings();
+          await this.plugin.updateWeather();
+        }));
+
+    new Setting(containerEl)
+      .setName('Enter Latitude')
+      .setDesc('Setting Latitude and Longitude will override the location setting')
+      .addText(text => text
+        .setPlaceholder('46.6632')
+        .setValue(this.plugin.settings.latitude)
+        .onChange(async (value) => {
+          this.plugin.settings.latitude = value;
+          await this.plugin.saveSettings();
+          await this.plugin.updateWeather();
+        }));
+
+    new Setting(containerEl)
+      .setName('Enter Longitude')
+      .setDesc('Setting Latitude and Longitude will override the location setting')
+      .addText(text => text
+        .setPlaceholder('-123.8046')
+        .setValue(this.plugin.settings.longitude)
+        .onChange(async (value) => {
+          this.plugin.settings.longitude = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
         }));

@@ -52,7 +52,14 @@ See [EXAMPLE.md](EXAMPLE.md) for a demonstration of how I use this in my Daily T
 ## Settings
 
 #### **Enter Location**
-Enter your city's name (Required)
+Enter your city's name (This setting is required unless latitude and longitude are defined)
+Note: If you are getting the wrong data try including your state and country codes. They can be entered as {city name},{state code},{country code}. Eg. South Bend, WA, US (The commas are required). If you are still having issues getting the correct data, the use the Latitude and Longitude settings instead.
+
+#### **Enter Latitude**
+Enter your city's latitude (Setting Latitude and Longitude will override the Location setting)
+
+#### **Enter Longitude**
+Enter your city's longitude (Setting Latitude and Longitude will override the Location setting)
 
 #### **OpenWeather API Key**
 Enter your OpenWeather API Key here (Required)
@@ -109,6 +116,8 @@ These macros contained within the weather string will be replaced with the appro
 - Sunrise `%sunrise%` - 08:30:30 (24 hour format)
 - Sunset `%sunset%` - 19:30:30 (24 hour format)
 - City Name `%name%` - Eg. Edmonton
+- Latitude `%latitude%` - Eg. 46.66
+- Longitude `%longitude%` - Eg. -123.80
 - Cloud coverage `%clouds%` (Percentage)
 - Rain past 1 hour `%rain1h%` (in millimeters)
 - Rain past 3 hours `%rain3h%` (in millimeters)
