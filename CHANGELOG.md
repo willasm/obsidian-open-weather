@@ -18,6 +18,10 @@
   - Leave them blank to use the location setting
 - The weather string placeholders `%latitude%` and `%longitude%`
   - These values are returned from the API call and are not from the new settings for Latitude and Longitude
+### Changed
+- Wind speed in meters/second now rounded to nearest whole number
+### Fixed
+- Now returns an error message on error Eg. `Error Code 404: city not found`
 
 ## [1.6.1] 2024-01-13
 ### Added

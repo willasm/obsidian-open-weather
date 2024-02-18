@@ -72,7 +72,11 @@ class FormatWeather {
     };
     let req = await fetch(url);
     let json = await req.json();
-    console.log('json:', json);
+    //console.log('json:', json);
+    if (json.cod != 200) {
+      weatherString = "Error Code "+json.cod+": "+json.message;
+      return weatherString;
+    }
     let conditions = json.weather[0].description;
     let id = json.weather[0].id;
     let conditionsEm = '';
@@ -128,6 +132,7 @@ class FormatWeather {
     let windSpeedms = json.wind.speed;
     if (this.units == "metric") {
       windSpeed = Math.round(windSpeed*3.6);
+      windSpeedms = Math.round(windSpeedms);
     } else {
       windSpeed = Math.round(windSpeed);
     }
