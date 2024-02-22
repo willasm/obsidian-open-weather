@@ -10,12 +10,12 @@ interface OpenWeatherSettings {
   units: string;
   language: string;
   excludeFolder: string;
-  weatherFormat1: string;
-  weatherFormat2: string;
-  weatherFormat3: string;
-  weatherFormat4: string;
+  weatherString1: string;
+  weatherString2: string;
+  weatherString3: string;
+  weatherString4: string;
   statusbarActive: boolean;
-  weatherFormatSB: string;
+  weatherStringSB: string;
   statusbarUpdateFreq: string;
 }
 
@@ -27,19 +27,19 @@ const DEFAULT_SETTINGS: OpenWeatherSettings = {
   units: 'metric',
   language: 'en',
   excludeFolder: '',
-  weatherFormat1: '%desc% • Current Temp: %temp%°C • Feels Like: %feels%°C\n',
-  weatherFormat2: '%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n',
-  weatherFormat3: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
-  weatherFormat4: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+  weatherString1: '%desc% • Current Temp: %temp%°C • Feels Like: %feels%°C\n',
+  weatherString2: '%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n',
+  weatherString3: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+  weatherString4: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
   statusbarActive: true,
-  weatherFormatSB: ' | %desc% | Current Temp: %temp%°C | Feels Like: %feels%°C | ',
+  weatherStringSB: ' | %desc% | Current Temp: %temp%°C | Feels Like: %feels%°C | ',
   statusbarUpdateFreq: "15"
 }
 
 //  ╭──────────────────────────────────────────────────────────────────────────────╮
 //  │                           ● Class FormatWeather ●                            │
 //  │                                                                              │
-//  │  • Get current weather from OpenWeather API and return a formatted string •  │
+//  │  • Get Current Weather From OpenWeather API and Return a Formatted String •  │
 //  ╰──────────────────────────────────────────────────────────────────────────────╯
 class FormatWeather {
   location: String;
@@ -64,7 +64,10 @@ class FormatWeather {
   async getWeather() {
     let weatherData;
     let weatherString;
+    let aqiNumber;
+    let aqiString;
     let url;
+    let urlAQI;
     if (this.latitude.length > 0 && this.longitude.length > 0) {
       url = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
     } else {
@@ -76,7 +79,23 @@ class FormatWeather {
     if (json.cod != 200) {
       weatherString = "Error Code "+json.cod+": "+json.message;
       return weatherString;
-    }
+    };
+    urlAQI = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${this.latitude}&lon=${this.longitude}&appid=${this.key}`
+    if (this.latitude.length > 0 && this.longitude.length > 0 && this.key.length > 0) {
+      let reqAQI = await fetch(urlAQI);
+      let jsonAQI = await reqAQI.json();
+      if (jsonAQI.cod) {
+        aqiNumber = 0;
+        aqiString = "Air Quality Index is Not Available";
+      } else {
+        const aqiStringsArr = ['Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
+        aqiNumber = jsonAQI.list[0].main.aqi;
+        aqiString = aqiStringsArr[aqiNumber-1]
+      };
+    } else {
+      aqiNumber = 0;
+      aqiString = "Air Quality Index is Not Available";
+    };
     let conditions = json.weather[0].description;
     let id = json.weather[0].id;
     let conditionsEm = '';
@@ -151,7 +170,6 @@ class FormatWeather {
 
     // Cloud cover
     let clouds = json.clouds.all;
-
     // Precipitation
     let rain1h;
     let rain3h;
@@ -304,7 +322,9 @@ class FormatWeather {
       "sunset": sunset,
       "name": name,
       "latitude": latitude,
-      "longitude": longitude
+      "longitude": longitude,
+      "aqiNum": aqiNumber,
+      "aqiStr": aqiString
     }
 
     // getWeather - Create Formatted weather string 
@@ -355,6 +375,8 @@ class FormatWeather {
     weatherString = weatherString.replace(/%name%/gmi, `${weatherData.name}`);
     weatherString = weatherString.replace(/%latitude%/gmi, `${weatherData.latitude}`);
     weatherString = weatherString.replace(/%longitude%/gmi, `${weatherData.longitude}`);
+    weatherString = weatherString.replace(/%aqinumber%/gmi, `${weatherData.aqiNum}`);
+    weatherString = weatherString.replace(/%aqistring%/gmi, `${weatherData.aqiStr}`);
 
     return weatherString;
   }
@@ -388,12 +410,16 @@ export default class OpenWeather extends Plugin {
   settings: OpenWeatherSettings;
   statusBar: HTMLElement;
   divEl: HTMLElement;
+  plugin: any;
 
   // • onload - Configure resources needed by the plugin • 
   async onload() {
 
     // onload - Load settings 
     await this.loadSettings();
+    //await this.onPick.bind(this, this.plugin, this.settings);
+    //OpenWeather.prototype.onPick.bind(this.settings.location);
+    //await this.onload.bind(this, this.plugin, this.settings);
 
     // onload - This creates an icon in the left ribbon 
     this.addRibbonIcon('thermometer-snowflake', 'OpenWeather', (evt: MouseEvent) => {
@@ -403,7 +429,7 @@ export default class OpenWeather extends Plugin {
         new Notice("Open a Markdown file first.");
         return;
       }
-      new InsertWeatherPicker(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
+      new InsertWeatherPicker(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1, this.settings.weatherString2, this.settings.weatherString3, this.settings.weatherString4).open();
     });
 
     // onload - This adds a status bar item to the bottom of the app - Does not work on mobile apps 
@@ -417,7 +443,7 @@ export default class OpenWeather extends Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherStringSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         this.statusBar.setText(weatherStr);
@@ -431,36 +457,36 @@ export default class OpenWeather extends Plugin {
       id: 'replace-template-string',
       name: 'Replace template strings',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat1.length > 0) {
+        if (this.settings.weatherString1.length > 0) {
           if (view.data.contains("%weather1%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather1%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
-        if (this.settings.weatherFormat2.length > 0) {
+        if (this.settings.weatherString2.length > 0) {
           if (view.data.contains("%weather2%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather2%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
-        if (this.settings.weatherFormat3.length > 0) {
+        if (this.settings.weatherString3.length > 0) {
           if (view.data.contains("%weather3%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather3%/gmi, weatherStr);
             editor.setValue(doc);
           }
         }
-        if (this.settings.weatherFormat4.length > 0) {
+        if (this.settings.weatherString4.length > 0) {
           if (view.data.contains("%weather4%")) {
-            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+            let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {return};
             let doc = editor.getValue().replace(/%weather4%/gmi, weatherStr);
@@ -470,13 +496,13 @@ export default class OpenWeather extends Plugin {
       }
     });
 
-    // onload - Insert weather format one string 
+    // onload - Insert weather string one 
     this.addCommand ({
-      id: 'insert-format-one',
-      name: 'Insert weather format one',
+      id: 'insert-string-one',
+      name: 'Insert weather string one',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+        if (this.settings.weatherString1.length > 0) {
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -486,13 +512,13 @@ export default class OpenWeather extends Plugin {
       }
     });
 
-    // onload - Insert weather format two string 
+    // onload - Insert weather string two 
     this.addCommand ({
-      id: 'insert-format-two',
-      name: 'Insert weather format two',
+      id: 'insert-string-two',
+      name: 'Insert weather string two',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat2.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+        if (this.settings.weatherString2.length > 0) {
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -502,13 +528,13 @@ export default class OpenWeather extends Plugin {
       }
     });
 
-    // onload - Insert weather format three string 
+    // onload - Insert weather string three 
     this.addCommand ({
-      id: 'insert-format-three',
-      name: 'Insert weather format three',
+      id: 'insert-string-three',
+      name: 'Insert weather string three',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat3.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+        if (this.settings.weatherString3.length > 0) {
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -518,13 +544,13 @@ export default class OpenWeather extends Plugin {
       }
     });
 
-    // onload - Insert weather format four string 
+    // onload - Insert weather string four 
     this.addCommand ({
-      id: 'insert-format-four',
-      name: 'Insert weather format four',
+      id: 'insert-string-four',
+      name: 'Insert weather string four',
       editorCallback: async (editor: Editor, view: MarkdownView) => {
-        if (this.settings.weatherFormat4.length > 0) {
-          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+        if (this.settings.weatherString4.length > 0) {
+          let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {return};
           editor.replaceSelection(`${weatherStr}`);
@@ -572,27 +598,27 @@ export default class OpenWeather extends Plugin {
     if (!view) return;
       if(document.getElementsByClassName('weather_current_1').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_1')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         divEl.innerHTML = weatherStr;
       }
       if(document.getElementsByClassName('weather_current_2').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_2')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         divEl.innerHTML = weatherStr;
       }
       if(document.getElementsByClassName('weather_current_3').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_3')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
         let weatherStr = await wstr.getWeatherString();
         divEl.innerHTML = weatherStr;
       }
       if(document.getElementsByClassName('weather_current_4').length === 1) {
         const divEl = document.getElementsByClassName('weather_current_4')[0];
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         divEl.innerHTML = weatherStr;
@@ -607,36 +633,36 @@ export default class OpenWeather extends Plugin {
     if (view.file.parent.path.includes(this.settings.excludeFolder)) return;    // Ignore this folder and any subfolders for Template String Replacement
     let editor = view.getViewData();
     if (editor == null) return;
-    if (this.settings.weatherFormat1.length > 0) {
+    if (this.settings.weatherString1.length > 0) {
       if (editor.contains("%weather1%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather1%/gmi, weatherStr);
         file?.vault.modify(file, editor);
       }
     }
-    if (this.settings.weatherFormat2.length > 0) {
+    if (this.settings.weatherString2.length > 0) {
       if (editor.contains("%weather2%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather2%/gmi, weatherStr);
         file?.vault.modify(file, editor);
       }
     }
-    if (this.settings.weatherFormat3.length > 0) {
+    if (this.settings.weatherString3.length > 0) {
       if (editor.contains("%weather3%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather3%/gmi, weatherStr);
         file?.vault.modify(file, editor);
       }
     }
-    if (this.settings.weatherFormat4.length > 0) {
+    if (this.settings.weatherString4.length > 0) {
       if (editor.contains("%weather4%")) {
-        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
+        let wstr = new FormatWeather (this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         editor = editor.replace(/%weather4%/gmi, weatherStr);
@@ -655,7 +681,7 @@ export default class OpenWeather extends Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherStringSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {return};
         this.statusBar.setText(weatherStr);
@@ -679,6 +705,51 @@ export default class OpenWeather extends Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
+
+  // • onPick - Callback for pick city suggester • 
+  async onPick(picked: any) {
+    //console.log('Finally got here!!!!!!', picked);
+    //let inputLoc = document.querySelector("body > div.modal-container.mod-dim > div.modal.mod-settings.mod-sidebar-layout > div.modal-content.vertical-tabs-container > div.vertical-tab-content-container > div > div:nth-child(6) > div.setting-item-control > input[type=text]");
+    //let inputLat = document.querySelector("body > div.modal-container.mod-dim > div.modal.mod-settings.mod-sidebar-layout > div.modal-content.vertical-tabs-container > div.vertical-tab-content-container > div > div:nth-child(7) > div.setting-item-control > input[type=text]");
+    //let inputLon = document.querySelector("body > div.modal-container.mod-dim > div.modal.mod-settings.mod-sidebar-layout > div.modal-content.vertical-tabs-container > div.vertical-tab-content-container > div > div:nth-child(8) > div.setting-item-control > input[type=text]");
+
+    let name = picked.name;
+    let lat = picked.lat;
+    let lon = picked.lon;
+    
+    // Input event for update to input boxes location, lattitude and longitude
+    const inputEvent = new InputEvent('input', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      inputType: 'insertText',
+      data: 'your_data'
+    });
+  
+    // Update location, latitude and longitude with the data from selected city
+    // HACK: Have not been able to get `this` to work from this method so forced to
+    // update them directly. Need to find a way to fix this - .bind() did not work for me?
+    let inputEls = document.getElementsByTagName("input");
+    for (let idx = 0; idx < inputEls.length; idx++) {
+      if (inputEls[idx].placeholder == "Enter city Eg. Chicago or South Bend,WA,US") {
+        inputEls[idx].value = name;
+        inputEls[idx].dispatchEvent(inputEvent);
+        // this.plugin.settings.location = name;
+      };
+      if (inputEls[idx].placeholder == "53.5501") {
+        inputEls[idx].value = lat;
+        inputEls[idx].dispatchEvent(inputEvent);
+        // this.plugin.settings.latitude = lat;
+      };
+      if (inputEls[idx].placeholder == "-113.4687") {
+        inputEls[idx].value = lon;
+        inputEls[idx].dispatchEvent(inputEvent);
+        // this.plugin.settings.longitude = lon;
+      };
+    };
+    // await this.plugin.saveSettings();
+    // await this.plugin.updateWeather();
+	}
 }
 
 //  ╭──────────────────────────────────────────────────────────────────────────────╮
@@ -701,18 +772,18 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
   units: string;
   language: string;
   excludeFolder: string;
-  weatherFormat1: string;
-  weatherFormat2: string;
-  weatherFormat3: string;
-  weatherFormat4: string;
+  weatherString1: string;
+  weatherString2: string;
+  weatherString3: string;
+  weatherString4: string;
   statusbarActive: boolean;
-  weatherFormatSB: string;
+  weatherStringSB: string;
   statusbarUpdateFreq: string;
   plugin: OpenWeather
   command: string;
   format: string;
 
-  constructor(location: string, latitude: string, longitude: string, key: string, units: string, language: string, weatherFormat1: string, weatherFormat2: string, weatherFormat3: string, weatherFormat4: string) {
+  constructor(location: string, latitude: string, longitude: string, key: string, units: string, language: string, weatherString1: string, weatherString2: string, weatherString3: string, weatherString4: string) {
     super(app);
     this.location = location;
     this.latitude = latitude;
@@ -720,10 +791,10 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
     this.key = key;
     this.units = units;
     this.language = language;
-    this.weatherFormat1 = weatherFormat1;
-    this.weatherFormat2 = weatherFormat2;
-    this.weatherFormat3 = weatherFormat3;
-    this.weatherFormat4 = weatherFormat4;
+    this.weatherString1 = weatherString1;
+    this.weatherString2 = weatherString2;
+    this.weatherString3 = weatherString3;
+    this.weatherString4 = weatherString4;
   }
 
   async getSuggestions(query: string): Promise<Commands[]> {
@@ -732,53 +803,53 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
     if (view?.getViewType() === 'markdown') {
       const md = view as MarkdownView;
       if (md.getMode() === 'source') {
-        if (this.weatherFormat1.length > 0) {
-          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat1);
+        if (this.weatherString1.length > 0) {
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherFormat1 = weatherStr;
-            ALL_COMMANDS.push({command: "Insert Weather String - Format 1", format: this.weatherFormat1})
+            this.weatherString1 = weatherStr;
+            ALL_COMMANDS.push({command: "Insert Weather String - 1", format: this.weatherString1})
           } else {
-            this.weatherFormat1 = "";
+            this.weatherString1 = "";
             return ALL_COMMANDS.filter((command) =>
             command.command.toLowerCase().includes(query.toLowerCase())
             );
           }
         }
-        if (this.weatherFormat2.length > 0) {
-          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat2);
+        if (this.weatherString2.length > 0) {
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherFormat2 = weatherStr;
-            ALL_COMMANDS.push({command: "Insert Weather String - Format 2", format: this.weatherFormat2})
+            this.weatherString2 = weatherStr;
+            ALL_COMMANDS.push({command: "Insert Weather String - 2", format: this.weatherString2})
           } else {
-            this.weatherFormat2 = "";
+            this.weatherString2 = "";
             return ALL_COMMANDS.filter((command) =>
             command.command.toLowerCase().includes(query.toLowerCase())
             );
           }
         }
-        if (this.weatherFormat3.length > 0) {
-          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat3);
+        if (this.weatherString3.length > 0) {
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherFormat3 = weatherStr;
-            ALL_COMMANDS.push({command: "Insert Weather String - Format 3", format: this.weatherFormat3})
+            this.weatherString3 = weatherStr;
+            ALL_COMMANDS.push({command: "Insert Weather String - 3", format: this.weatherString3})
           } else {
-            this.weatherFormat3 = "";
+            this.weatherString3 = "";
             return ALL_COMMANDS.filter((command) =>
             command.command.toLowerCase().includes(query.toLowerCase())
             );
           }
         }
-        if (this.weatherFormat4.length > 0) {
-          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat4);
+        if (this.weatherString4.length > 0) {
+          let wstr = new FormatWeather (this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherFormat4 = weatherStr;
-            ALL_COMMANDS.push({command: "Insert Weather String - Format 4", format: this.weatherFormat4})
+            this.weatherString4 = weatherStr;
+            ALL_COMMANDS.push({command: "Insert Weather String - 4", format: this.weatherString4})
           } else {
-            this.weatherFormat4 = "";
+            this.weatherString4 = "";
             return ALL_COMMANDS.filter((command) =>
             command.command.toLowerCase().includes(query.toLowerCase())
             );
@@ -811,27 +882,27 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
     let editor = view.getViewData();
     if (editor == null) return;
     if (command.command == 'Replace Template Strings') {
-      if (this.weatherFormat1.length > 0) {
-        editor = editor.replace(/%weather1%/gmi, this.weatherFormat1);
+      if (this.weatherString1.length > 0) {
+        editor = editor.replace(/%weather1%/gmi, this.weatherString1);
         view.setViewData(editor,false);
         file?.vault.modify(file, editor);
       } else {
         return;
       }
-      if (this.weatherFormat2.length > 0) {
-        editor = editor.replace(/%weather2%/gmi, this.weatherFormat2);
+      if (this.weatherString2.length > 0) {
+        editor = editor.replace(/%weather2%/gmi, this.weatherString2);
         file?.vault.modify(file, editor);
       } else {
         return;
       }
-      if (this.weatherFormat3.length > 0) {
-        editor = editor.replace(/%weather3%/gmi, this.weatherFormat3);
+      if (this.weatherString3.length > 0) {
+        editor = editor.replace(/%weather3%/gmi, this.weatherString3);
         file?.vault.modify(file, editor);
       } else {
         return;
       }
-      if (this.weatherFormat4.length > 0) {
-        editor = editor.replace(/%weather4%/gmi, this.weatherFormat4);
+      if (this.weatherString4.length > 0) {
+        editor = editor.replace(/%weather4%/gmi, this.weatherString4);
         file?.vault.modify(file, editor);
       } else {
         return;
@@ -843,12 +914,84 @@ class InsertWeatherPicker extends SuggestModal<Commands> implements OpenWeatherS
 }
 
 //  ╭──────────────────────────────────────────────────────────────────────────────╮
+//  │                       ● Class CitySearchResultPicker ●                       │
+//  │                                                                              │
+//  │             • Displays City Search Results in a Suggest Modal •              │
+//  ╰──────────────────────────────────────────────────────────────────────────────╯
+interface CommandsCity {
+  city: string;
+  coords: string;
+  index: number;
+  selection: object;
+}
+
+let ALL_CITY_COMMANDS: { city: string; coords: string; index: number; selection: object }[] = [];
+
+class CitySearchResultPicker extends SuggestModal<CommandsCity> implements CitySearchResultPicker {
+  json: object;
+
+  constructor(json: object) {
+    super(app);
+    this.json = json;
+  }
+
+  async getSuggestions(query: string): Promise<CommandsCity[]> {
+    ALL_CITY_COMMANDS = [];
+    // {
+    //   "name": "Hell",
+    //   "lat": 42.4347571,
+    //   "lon": -83.9849477,
+    //   "country": "US",
+    //   "state": "Michigan"
+    // },
+
+    // Setup choices based on the list of cities returned from the Geocoding API
+    let cityObjCount = Object.keys(this.json).length;
+    let values = Object.values(this.json);
+    for (let i = 0; i < cityObjCount; i++) {
+      let city = values[i].name;
+      let state = values[i].state;
+      if (state == undefined) {state = ""};
+      let country = values[i].country;
+      if (country == undefined) {country = ""};
+      let locationStr = city+" "+state+" "+country;
+      let coords = "Latitude: "+values[i].lat+" "+"Longitude: "+values[i].lon;
+      ALL_CITY_COMMANDS.push({city: locationStr, coords: coords, index: i, selection: values[i]});
+    }
+    let retry = "None of these match? Try again...";
+    let redo = "Select to perform another search";
+    ALL_CITY_COMMANDS.push({city: retry, coords: redo, index: 9999, selection: {}});
+    return ALL_CITY_COMMANDS.filter((command) =>
+      command.city.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+  
+  // Renders each suggestion item.
+  renderSuggestion(command: CommandsCity, el: HTMLElement) {
+    el.createEl("div", { text: command.city });
+    el.createEl("small", { text: command.coords });
+  }
+
+  // Perform action on the selected suggestion.
+  onChooseSuggestion(command: CommandsCity, evt: MouseEvent | KeyboardEvent) {
+    if (command.index == 9999) {return};    // User selected retry
+    OpenWeather.prototype.onPick(command.selection);
+    //return(command.selection);
+    //console.log('command.selection:', command.selection);
+  }
+};
+
+
+//  ╭──────────────────────────────────────────────────────────────────────────────╮
 //  │                       ● Class OpenWeatherSettingsTab ●                       │
 //  │                                                                              │
 //  │                        • Open Weather Settings Tab •                         │
 //  ╰──────────────────────────────────────────────────────────────────────────────╯
 class OpenWeatherSettingsTab extends PluginSettingTab {
   plugin: OpenWeather;
+  citySearch: string;
+  cityObj: object;
+  jsonCities: object;
 
   constructor(app: App, plugin: OpenWeather) {
     super(app, plugin);
@@ -858,6 +1001,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
   display(): void {
     const {containerEl} = this;
     containerEl.empty();
+    let citySearch: string = this.plugin.settings.location;
 
     // Get vault folders for exclude folder dropdown list
     const abstractFiles = app.vault.getAllLoadedFiles();
@@ -870,14 +1014,80 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       }
     });
 
-    // OpenWeatherSettingsTab - H2 Header - Settings for calling OpenWeather API 
-    containerEl.createEl('h2', {text: 'Settings for calling OpenWeather API'});
+		new Setting(containerEl)
+			.setName('View on Github')
+			.addButton(cb => {
+				cb.setButtonText('GitHub Readme.md');
+        cb.setTooltip('Visit OpenWeather Readme.md for detailed plugin information');
+				cb.onClick(() => {
+          window.open(`https://github.com/willasm/obsidian-open-weather/#openweather-plugin-for-obsidian`, '_blank');
+				});
+			})
+			.addButton(cb => {
+				cb.setButtonText('Example.md');
+        cb.setTooltip('A detailed explanation of how I use the plugin in my daily note');
+				cb.onClick(() => {
+          window.open(`https://github.com/willasm/obsidian-open-weather/blob/master/EXAMPLE.md`, '_blank');
+				});
+			})
+			.addButton(cb => {
+				cb.setButtonText('Report Issue');
+        cb.setTooltip('Have any questions or comments? Feel free to post them here');
+				cb.onClick(() => {
+          window.open(`https://github.com/willasm/obsidian-open-weather/issues`, '_blank');
+				});
+			})
+
+    // OpenWeatherSettingsTab - H2 Header - OpenWeather API Authentication key (required)
+    containerEl.createEl('h2', {text: 'OpenWeather API Authentication key (required)'});
 
     new Setting(containerEl)
-      .setName('Enter Location')
-      .setDesc('Name of the city you want to retrieve weather for')
+      .setName('OpenWeather API key')
+      .setDesc('A free OpenWeather API key is required for the plugin to work. Go to https://openweathermap.org to register and get a key')
       .addText(text => text
-        .setPlaceholder('Enter city Eg. Chicago, or South Bend, WA')
+        .setPlaceholder('Enter OpenWeather API key')
+        .setValue(this.plugin.settings.key)
+        .onChange(async (value) => {
+          this.plugin.settings.key = value;
+          await this.plugin.saveSettings();
+          await this.plugin.updateWeather();
+        }));
+
+    // OpenWeatherSettingsTab - H2 Header - Location
+    containerEl.createEl('h2', {text: 'Location (required)'});
+
+    new Setting(containerEl)
+      .setName('Use Geocoding API to get location (recommended)')
+      .setDesc('The Geocoding API returns the requested locations name, state, country, latitude and longitude')
+      .addText(text => text
+        .setPlaceholder('City name to search for')
+        //.setValue(this.plugin.settings.location)
+        .onChange(async (value) => {
+          citySearch = value;
+      }))
+			.addButton(cb => {
+				cb.setButtonText('Get location');
+        //cb.setCta();
+				cb.onClick(async () => {
+          let key = this.plugin.settings.key;
+           //let city = citySearch;
+          if (key.length == 0) {
+            new Notice("OpenWeather API key is required");
+          } else {
+            let url;
+            url = `https://api.openweathermap.org/geo/1.0/direct?q=${citySearch}&limit=5&appid=${key}`;
+            let req = await fetch(url);
+            let jsonCitiesObj = await req.json();
+            new CitySearchResultPicker(jsonCitiesObj).open();
+          }
+        })
+      });
+
+    new Setting(containerEl)
+      .setName('Enter location')
+      .setDesc('Name of the city you want to retrieve weather for. Also supports {city name},{country code} or {city name},{state code},{country code} Eg. South Bend,WA,US Please note that searching by states available only for the USA locations')
+      .addText(text => text
+        .setPlaceholder('Enter city Eg. Chicago or South Bend,WA,US')
         .setValue(this.plugin.settings.location)
         .onChange(async (value) => {
           this.plugin.settings.location = value;
@@ -886,10 +1096,10 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Enter Latitude')
-      .setDesc('Setting Latitude and Longitude will override the location setting')
+      .setName('Enter latitude')
+      .setDesc('Please note that API requests by city name have been deprecated although they are still available for use. The preferred method is to use latitude and longitude.')
       .addText(text => text
-        .setPlaceholder('46.6632')
+        .setPlaceholder('53.5501')
         .setValue(this.plugin.settings.latitude)
         .onChange(async (value) => {
           this.plugin.settings.latitude = value;
@@ -898,10 +1108,10 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Enter Longitude')
-      .setDesc('Setting Latitude and Longitude will override the location setting')
+      .setName('Enter longitude')
+      .setDesc('Please note that API requests by city name have been deprecated although they are still available for use. The preferred method is to use latitude and longitude.')
       .addText(text => text
-        .setPlaceholder('-123.8046')
+        .setPlaceholder('-113.4687')
         .setValue(this.plugin.settings.longitude)
         .onChange(async (value) => {
           this.plugin.settings.longitude = value;
@@ -909,25 +1119,16 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           await this.plugin.updateWeather();
         }));
 
-    new Setting(containerEl)
-      .setName('OpenWeather API Key')
-      .setDesc('A free OpenWeather API key is required for the plugin to work. Go to https://openweathermap.org to register and get a key')
-      .addText(text => text
-        .setPlaceholder('Enter OpenWeather API Key')
-        .setValue(this.plugin.settings.key)
-        .onChange(async (value) => {
-          this.plugin.settings.key = value;
-          await this.plugin.saveSettings();
-          await this.plugin.updateWeather();
-        }));
+    // OpenWeatherSettingsTab - H2 Header - General preferences
+    containerEl.createEl('h2', {text: 'General preferences'});
 
     new Setting(containerEl)
-      .setName("Units of Measurement")
-      .setDesc("Units of measurement. Standard, Metric and Imperial units are available")
+      .setName("Units of measurement")
+      .setDesc("Units of measurement. Metric, Imperial and Standard units are available")
       .addDropdown(dropDown => {
-        dropDown.addOption('standard', 'Standard');
         dropDown.addOption('metric', 'Metric');
         dropDown.addOption('imperial', 'Imperial');
+        dropDown.addOption('standard', 'Standard');
         dropDown.onChange(async (value) => {
           this.plugin.settings.units = value;
           await this.plugin.saveSettings();
@@ -938,7 +1139,7 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Language")
-      .setDesc("Supported languages available")
+      .setDesc("Supported languages available Note: This only affects text returned from the OpenWeather API")
       .addDropdown(dropDown => {
         dropDown.addOption('af', 'Afrikaans');
         dropDown.addOption('al', 'Albanian');
@@ -987,20 +1188,19 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
         dropDown.addOption('zh_tw', 'Chinese Traditional');
         dropDown.addOption('zu', 'Zulu');
         dropDown.onChange(async (value) => {
-          this.plugin.settings.language = value;
-          await this.plugin.saveSettings();
-          await this.plugin.updateWeather();
+        this.plugin.settings.language = value;
+        await this.plugin.saveSettings();
+        await this.plugin.updateWeather();
         })
       .setValue(this.plugin.settings.language);
       });
 
     // OpenWeatherSettingsTab - H2 Header - Exclude Folder (Exclude Folder for Template String Replacement) 
-    containerEl.createEl('br');
-    containerEl.createEl('h2', {text: 'Folder to Exclude From Automatic Template Strings Replacement'});
+    containerEl.createEl('h2', {text: 'Folder to exclude from automatic template strings replacement'});
 
     new Setting(containerEl)
-      .setName("Exclude Folder")
-      .setDesc("Folder to Exclude from Automatic Template String Replacement")
+      .setName("Exclude folder")
+      .setDesc("Folder to exclude from automatic template string replacement")
       .addDropdown(dropDown => {
         folders.forEach(e => {
           dropDown.addOption(e.name,e.name);
@@ -1012,19 +1212,18 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       .setValue(this.plugin.settings.excludeFolder);
       });
 
-    // OpenWeatherSettingsTab - H2 Header - Weather Strings Formatting (Up to 4 Strings are Available) 
-    containerEl.createEl('br');
-    containerEl.createEl('h2', {text: 'Weather Strings Formatting (Up to 4 Strings are Available)'});
+    // OpenWeatherSettingsTab - H2 Header - Weather Strings Formatting (4 Strings are Available) 
+    containerEl.createEl('h2', {text: 'Weather strings formatting (4 strings are available)'});
 
     new Setting(containerEl)
-      .setName("Weather String Format 1")
-      .setDesc("Weather string format one")
+      .setName("Weather string 1")
+      .setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.")
       .addTextArea((textArea: TextAreaComponent) => {
         textArea
-        .setPlaceholder('Weather String Format 1')
-        .setValue(this.plugin.settings.weatherFormat1)
+        .setPlaceholder('Weather string 1')
+        .setValue(this.plugin.settings.weatherString1)
         .onChange(async (value) => {
-          this.plugin.settings.weatherFormat1 = value;
+          this.plugin.settings.weatherString1 = value;
           await this.plugin.saveSettings();
       })
       textArea.inputEl.setAttr("rows", 10);
@@ -1032,14 +1231,14 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
     });
 
     new Setting(containerEl)
-      .setName("Weather String Format 2")
-      .setDesc("Weather string format two")
+      .setName("Weather string 2")
+      .setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.")
       .addTextArea((textArea: TextAreaComponent) => {
         textArea
-        .setPlaceholder('Weather String Format 2')
-        .setValue(this.plugin.settings.weatherFormat2)
+        .setPlaceholder('Weather string 2')
+        .setValue(this.plugin.settings.weatherString2)
         .onChange(async (value) => {
-          this.plugin.settings.weatherFormat2 = value;
+          this.plugin.settings.weatherString2 = value;
           await this.plugin.saveSettings();
       })
       textArea.inputEl.setAttr("rows", 10);
@@ -1047,14 +1246,14 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
     });
 
     new Setting(containerEl)
-      .setName("Weather String Format 3")
-      .setDesc("Weather string format three")
+      .setName("Weather string 3")
+      .setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.")
       .addTextArea((textArea: TextAreaComponent) => {
         textArea
-        .setPlaceholder('Weather String Format 3')
-        .setValue(this.plugin.settings.weatherFormat3)
+        .setPlaceholder('Weather string 3')
+        .setValue(this.plugin.settings.weatherString3)
         .onChange(async (value) => {
-          this.plugin.settings.weatherFormat3 = value;
+          this.plugin.settings.weatherString3 = value;
           await this.plugin.saveSettings();
       })
       textArea.inputEl.setAttr("rows", 10);
@@ -1062,28 +1261,26 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
     });
 
     new Setting(containerEl)
-      .setName("Weather String Format 4")
-      .setDesc("Weather string format four")
+      .setName("Weather string 4")
+      .setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.")
       .addTextArea((textArea: TextAreaComponent) => {
         textArea
-        .setPlaceholder('Weather String Format 4')
-        .setValue(this.plugin.settings.weatherFormat4)
+        .setPlaceholder('Weather string 4')
+        .setValue(this.plugin.settings.weatherString4)
         .onChange(async (value) => {
-          this.plugin.settings.weatherFormat4 = value;
+          this.plugin.settings.weatherString4 = value;
           await this.plugin.saveSettings();
       })
       textArea.inputEl.setAttr("rows", 10);
       textArea.inputEl.setAttr("cols", 60);
     });
-
 
     // OpenWeatherSettingsTab - H2 Header - Show Weather in Statusbar Options
     if (Platform.isDesktop) {
-      containerEl.createEl('br');
-      containerEl.createEl('h2', {text: 'Show Weather in Statusbar Options'});
+      containerEl.createEl('h2', {text: 'Show weather in statusbar options'});
 
       new Setting(containerEl)
-      .setName('Show Weather in Statusbar')
+      .setName('Show weather in statusbar')
       .setDesc('Enable weather display in statusbar')
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.statusbarActive)
@@ -1094,14 +1291,14 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       }));
 
       new Setting(containerEl)
-      .setName("Weather String Format Statusbar")
+      .setName("Weather string format statusbar")
       .setDesc("Weather string format for the statusbar")
       .addTextArea((textArea: TextAreaComponent) => {
         textArea
         .setPlaceholder('Statusbar Weather Format')
-        .setValue(this.plugin.settings.weatherFormatSB)
+        .setValue(this.plugin.settings.weatherStringSB)
         .onChange(async (value) => {
-          this.plugin.settings.weatherFormatSB = value;
+          this.plugin.settings.weatherStringSB = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
         })
@@ -1112,13 +1309,12 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
       this.plugin.settings.statusbarActive = false;   // Set statusbar inactive for mobile
     }
 
-    // OpenWeatherSettingsTab - H2 Header - Show Weather in Statusbar and Dynamic DIV's Delay
-    containerEl.createEl('br');
-    containerEl.createEl('h2', {text: `Show Weather in Statusbar and Dynamic DIV's Delay`});
+    // OpenWeatherSettingsTab - H2 Header - Show Weather in Statusbar and Dynamic DIV's update frequency
+    containerEl.createEl('h2', {text: `Weather update frequency`});
 
     new Setting(containerEl)
-      .setName("Update Frequency")
-      .setDesc("Update frequency for weather information displayed on the statusbar and dynamic DIV's")
+      .setName("Update frequency")
+      .setDesc("Update frequency for weather information displayed on the statusbar and in dynamic DIV's")
       .addDropdown(dropDown => {
         dropDown.addOption('1', 'Every Minute');
         dropDown.addOption('5', 'Every 5 Minutes');
@@ -1133,10 +1329,9 @@ class OpenWeatherSettingsTab extends PluginSettingTab {
           await this.plugin.updateWeather();
         })
       .setValue(this.plugin.settings.statusbarUpdateFreq)
-      });
-      
-    }
+    });
   }
+};
 
 // Weather Placeholders
 // ====================
