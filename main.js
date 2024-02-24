@@ -28,6 +28,348 @@ __export(main_exports, {
 });
 module.exports = __toCommonJS(main_exports);
 var import_obsidian = require("obsidian");
+
+// getCurrentWeather.ts
+async function getCurrentWeather(key, latitude, longitude, language, units, format) {
+  let weatherData;
+  let weatherString;
+  let url;
+  let aqiNumber;
+  let aqiString;
+  let urlAQI = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${key}`;
+  if (latitude.length > 0 && longitude.length > 0 && key.length > 0) {
+    let reqAQI = await fetch(urlAQI);
+    let jsonAQI = await reqAQI.json();
+    if (jsonAQI.cod) {
+      aqiNumber = 0;
+      aqiString = "Air Quality Index is Not Available";
+    } else {
+      const aqiStringsArr = ["Good", "Fair", "Moderate", "Poor", "Very Poor"];
+      aqiNumber = jsonAQI.list[0].main.aqi;
+      aqiString = aqiStringsArr[aqiNumber - 1];
+    }
+    ;
+  } else {
+    aqiNumber = 0;
+    aqiString = "Air Quality Index is Not Available";
+  }
+  ;
+  if (latitude.length > 0 && longitude.length > 0) {
+    url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&lang=${language}&appid=${key}&units=${units}`;
+  } else {
+    url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&lang=${language}&appid=${key}&units=${units}`;
+  }
+  ;
+  let req = await fetch(url);
+  let json = await req.json();
+  if (json.cod != 200) {
+    weatherString = "Error Code " + json.cod + ": " + json.message;
+    return weatherString;
+  }
+  ;
+  let conditions = json.weather[0].description;
+  let id = json.weather[0].id;
+  let conditionsEm = "";
+  if (id > 199 && id < 300) {
+    conditionsEm = "\u26C8\uFE0F";
+  }
+  if (id > 299 && id < 500) {
+    conditionsEm = "\u{1F326}\uFE0F";
+  }
+  if (id > 499 && id < 600) {
+    conditionsEm = "\u{1F327}\uFE0F";
+  }
+  if (id > 599 && id < 700) {
+    conditionsEm = "\u2744\uFE0F";
+  }
+  if (id > 699 && id < 800) {
+    conditionsEm = "\u{1F32B}\uFE0F";
+  }
+  if (id == 771) {
+    conditionsEm = "\u{1F300}";
+  }
+  if (id == 781) {
+    conditionsEm = "\u{1F32A}\uFE0F";
+  }
+  if (id == 800) {
+    conditionsEm = "\u{1F506}";
+  }
+  if (id > 800 && id < 804) {
+    conditionsEm = "\u{1F325}\uFE0F";
+  }
+  if (id == 804) {
+    conditionsEm = "\u2601\uFE0F";
+  }
+  conditions = conditions.replace(/^\w|\s\w/g, (c2) => c2.toUpperCase());
+  let iconName = json.weather[0].icon;
+  const iconApi = await fetch("http://openweathermap.org/img/w/" + iconName + ".png");
+  let iconUrl = iconApi.url;
+  let temp = json.main.temp;
+  temp = Math.round(temp);
+  let feelsLike = json.main.feels_like;
+  feelsLike = Math.round(feelsLike);
+  let tempMin = json.main.temp_min;
+  tempMin = Math.round(tempMin);
+  let tempMax = json.main.temp_max;
+  tempMax = Math.round(tempMax);
+  let pressure = json.main.pressure;
+  let humidity = json.main.humidity;
+  let seaLevel = json.main.sea_level;
+  let groundLevel = json.main.grnd_level;
+  let visibility = json.visibility;
+  let windSpeed = json.wind.speed;
+  let windSpeedms = json.wind.speed;
+  if (this.units == "metric") {
+    windSpeed = Math.round(windSpeed * 3.6);
+    windSpeedms = Math.round(windSpeedms);
+  } else {
+    windSpeed = Math.round(windSpeed);
+  }
+  let windDirection = json.wind.deg;
+  const directions = ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"];
+  windDirection = directions[Math.round(windDirection / 45) % 8];
+  let windGust = json.wind.gust;
+  if (windGust != void 0) {
+    if (this.units == "metric") {
+      windGust = Math.round(windGust * 3.6);
+    } else {
+      windGust = Math.round(windGust);
+    }
+  } else {
+    windGust = "N/A";
+  }
+  let clouds = json.clouds.all;
+  let rain1h;
+  let rain3h;
+  let snow1h;
+  let snow3h;
+  let precipitation1h;
+  let precipitation3h;
+  if (json.rain != void 0) {
+    let rainObj = json.rain;
+    let keys = Object.keys(rainObj);
+    let values = Object.values(rainObj);
+    if (keys[0] === "1h") {
+      rain1h = values[0];
+    } else if (keys[0] === "3h") {
+      rain3h = values[0];
+    }
+    if (keys.length > 1) {
+      if (keys[1] === "1h") {
+        rain1h = values[1];
+      } else if (keys[1] === "3h") {
+        rain3h = values[1];
+      }
+    }
+  } else {
+    rain1h = 0;
+    rain3h = 0;
+  }
+  if (rain1h === void 0) {
+    rain1h = 0;
+  }
+  ;
+  if (rain3h === void 0) {
+    rain3h = 0;
+  }
+  ;
+  if (json.snow != void 0) {
+    let snowObj = json.snow;
+    let keys = Object.keys(snowObj);
+    let values = Object.values(snowObj);
+    if (keys[0] === "1h") {
+      snow1h = values[0];
+    } else if (keys[0] === "3h") {
+      snow3h = values[0];
+    }
+    if (keys.length > 1) {
+      if (keys[1] === "1h") {
+        snow1h = values[1];
+      } else if (keys[1] === "3h") {
+        snow3h = values[1];
+      }
+    }
+  } else {
+    snow1h = 0;
+    snow3h = 0;
+  }
+  if (snow1h === void 0) {
+    snow1h = 0;
+  }
+  ;
+  if (snow3h === void 0) {
+    snow3h = 0;
+  }
+  ;
+  precipitation1h = rain1h || snow1h;
+  precipitation3h = rain3h || snow3h;
+  let dt = json.dt;
+  let a = new Date(dt * 1e3);
+  const months1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+  const months2 = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+  const months3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months4 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  let year1 = a.getFullYear();
+  let year2str = String(year1).slice(-2);
+  let year2 = Number(year2str);
+  let month1 = months1[a.getMonth()];
+  let month2 = months2[a.getMonth()];
+  let month3 = months3[a.getMonth()];
+  let month4 = months4[a.getMonth()];
+  let date1 = a.getDate();
+  let date2 = a.getDate() < 10 ? "0" + a.getDate() : a.getDate();
+  let ampm1 = "AM";
+  let ampm2 = "am";
+  if (a.getHours() > 11) {
+    ampm1 = "PM";
+    ampm2 = "pm";
+  }
+  let hour1 = a.getHours();
+  let hour2 = a.getHours();
+  if (a.getHours() > 12) {
+    hour2 = a.getHours() - 12;
+  }
+  if (a.getHours() == 0) {
+    hour1 = 12;
+    hour2 = 12;
+  }
+  let min = a.getMinutes() < 10 ? "0" + a.getMinutes() : a.getMinutes();
+  let sec = a.getSeconds() < 10 ? "0" + a.getSeconds() : a.getSeconds();
+  let sr = json.sys.sunrise;
+  let b = new Date(sr * 1e3);
+  let srhour = b.getHours() < 10 ? "0" + b.getHours() : b.getHours();
+  let srmin = b.getMinutes() < 10 ? "0" + b.getMinutes() : b.getMinutes();
+  let srsec = b.getSeconds() < 10 ? "0" + b.getSeconds() : b.getSeconds();
+  let sunrise = srhour + ":" + srmin + ":" + srsec;
+  let ss = json.sys.sunset;
+  let c = new Date(ss * 1e3);
+  let sshour = c.getHours() < 10 ? "0" + c.getHours() : c.getHours();
+  let ssmin = c.getMinutes() < 10 ? "0" + c.getMinutes() : c.getMinutes();
+  let sssec = c.getSeconds() < 10 ? "0" + c.getSeconds() : c.getSeconds();
+  let sunset = sshour + ":" + ssmin + ":" + sssec;
+  let name = json.name;
+  let lat = json.coord.lat;
+  let lon = json.coord.lon;
+  weatherData = {
+    "status": "ok",
+    "conditions": conditions,
+    "conditionsEm": conditionsEm,
+    "icon": iconUrl,
+    "temp": temp,
+    "feelsLike": feelsLike,
+    "tempMin": tempMin,
+    "tempMax": tempMax,
+    "pressure": pressure,
+    "humidity": humidity,
+    "seaLevel": seaLevel,
+    "groundLevel": groundLevel,
+    "visibility": visibility,
+    "windSpeed": windSpeed,
+    "windSpeedms": windSpeedms,
+    "windDirection": windDirection,
+    "windGust": windGust,
+    "clouds": clouds,
+    "rain1h": rain1h,
+    "rain3h": rain3h,
+    "snow1h": snow1h,
+    "snow3h": snow3h,
+    "precipitation1h": precipitation1h,
+    "precipitation3h": precipitation3h,
+    "year1": year1,
+    "year2": year2,
+    "month1": month1,
+    "month2": month2,
+    "month3": month3,
+    "month4": month4,
+    "date1": date1,
+    "date2": date2,
+    "ampm1": ampm1,
+    "ampm2": ampm2,
+    "hour1": hour1,
+    "hour2": hour2,
+    "min": min,
+    "sec": sec,
+    "sunrise": sunrise,
+    "sunset": sunset,
+    "name": name,
+    "latitude": lat,
+    "longitude": lon,
+    "aqiNum": aqiNumber,
+    "aqiStr": aqiString
+  };
+  weatherString = format.replace(/%desc%/gmi, weatherData.conditions);
+  weatherString = weatherString.replace(/%desc-em%/gmi, weatherData.conditionsEm);
+  weatherString = weatherString.replace(/%icon%/gmi, `<img src=${weatherData.icon} />`);
+  weatherString = weatherString.replace(/%temp%/gmi, weatherData.temp);
+  weatherString = weatherString.replace(/%feels%/gmi, weatherData.feelsLike);
+  weatherString = weatherString.replace(/%tempmin%/gmi, weatherData.tempMin);
+  weatherString = weatherString.replace(/%tempmax%/gmi, weatherData.tempMax);
+  weatherString = weatherString.replace(/%pressure%/gmi, weatherData.pressure);
+  weatherString = weatherString.replace(/%humidity%/gmi, weatherData.humidity);
+  weatherString = weatherString.replace(/%pressure-sl%/gmi, weatherData.seaLevel);
+  weatherString = weatherString.replace(/%pressure-gl%/gmi, weatherData.groundLevel);
+  weatherString = weatherString.replace(/%visibility%/gmi, weatherData.visibility);
+  weatherString = weatherString.replace(/%wind-speed%/gmi, weatherData.windSpeed);
+  weatherString = weatherString.replace(/%wind-speed-ms%/gmi, weatherData.windSpeedms);
+  weatherString = weatherString.replace(/%wind-dir%/gmi, weatherData.windDirection);
+  if (weatherData.windGust == "N/A") {
+    weatherString = weatherString.replace(/\^.+\^/gmi, "");
+  } else {
+    weatherString = weatherString.replace(/%wind-gust%/gmi, weatherData.windGust);
+    weatherString = weatherString.replace(/\^(.+)\^/gmi, "$1");
+  }
+  weatherString = weatherString.replace(/%clouds%/gmi, `${weatherData.clouds}`);
+  weatherString = weatherString.replace(/%rain1h%/gmi, `${weatherData.rain1h}`);
+  weatherString = weatherString.replace(/%rain3h%/gmi, `${weatherData.rain3h}`);
+  weatherString = weatherString.replace(/%snow1h%/gmi, `${weatherData.snow1h}`);
+  weatherString = weatherString.replace(/%snow3h%/gmi, `${weatherData.snow3h}`);
+  weatherString = weatherString.replace(/%precipitation1h%/gmi, `${weatherData.precipitation1h}`);
+  weatherString = weatherString.replace(/%precipitation3h%/gmi, `${weatherData.precipitation3h}`);
+  weatherString = weatherString.replace(/%dateYear1%/gmi, `${weatherData.year1}`);
+  weatherString = weatherString.replace(/%dateYear2%/gmi, `${weatherData.year2}`);
+  weatherString = weatherString.replace(/%dateMonth1%/gmi, `${weatherData.month1}`);
+  weatherString = weatherString.replace(/%dateMonth2%/gmi, `${weatherData.month2}`);
+  weatherString = weatherString.replace(/%dateMonth3%/gmi, `${weatherData.month3}`);
+  weatherString = weatherString.replace(/%dateMonth4%/gmi, `${weatherData.month4}`);
+  weatherString = weatherString.replace(/%dateDay1%/gmi, `${weatherData.date1}`);
+  weatherString = weatherString.replace(/%dateDay2%/gmi, `${weatherData.date2}`);
+  weatherString = weatherString.replace(/%ampm1%/gmi, `${weatherData.ampm1}`);
+  weatherString = weatherString.replace(/%ampm2%/gmi, `${weatherData.ampm2}`);
+  weatherString = weatherString.replace(/%timeH1%/gmi, `${weatherData.hour1}`);
+  weatherString = weatherString.replace(/%timeH2%/gmi, `${weatherData.hour2}`);
+  weatherString = weatherString.replace(/%timeM%/gmi, `${weatherData.min}`);
+  weatherString = weatherString.replace(/%timeS%/gmi, `${weatherData.sec}`);
+  weatherString = weatherString.replace(/%sunrise%/gmi, `${weatherData.sunrise}`);
+  weatherString = weatherString.replace(/%sunset%/gmi, `${weatherData.sunset}`);
+  weatherString = weatherString.replace(/%name%/gmi, `${weatherData.name}`);
+  weatherString = weatherString.replace(/%latitude%/gmi, `${weatherData.latitude}`);
+  weatherString = weatherString.replace(/%longitude%/gmi, `${weatherData.longitude}`);
+  weatherString = weatherString.replace(/%aqinumber%/gmi, `${weatherData.aqiNum}`);
+  weatherString = weatherString.replace(/%aqistring%/gmi, `${weatherData.aqiStr}`);
+  return weatherString;
+}
+
+// getForecastWeather.ts
+async function getForecastWeather(key, latitude, longitude, language, units, format) {
+  let weatherData;
+  let weatherString;
+  let url;
+  if (latitude.length > 0 && longitude.length > 0) {
+    url = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&lang=${language}&appid=${key}&units=${units}`;
+  } else {
+    url = `https://api.openweathermap.org/data/2.5/forecast?q=${this}&lang=${this}&appid=${key}&units=${units}`;
+  }
+  ;
+  let req = await fetch(url);
+  let json = await req.json();
+  if (json.cod != 200) {
+    weatherString = "Error Code " + json.cod + ": " + json.message;
+    return weatherString;
+  }
+  ;
+}
+
+// main.ts
 var displayErrorMsg = true;
 var DEFAULT_SETTINGS = {
   location: "",
@@ -37,17 +379,17 @@ var DEFAULT_SETTINGS = {
   units: "metric",
   language: "en",
   excludeFolder: "",
-  weatherString1: "%desc% \u2022 Current Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\n",
-  weatherString2: "%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% \u2022 Sunset: %sunset%\n",
-  weatherString3: "%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% \u2022 %timeH2%:%timeM% %ampm1% \u2022 %desc%<br>&nbsp;Recorded Temp: %temp% \u2022 Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% \u2022 Sunset: %sunset%",
-  weatherString4: "%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% \u2022 %timeH2%:%timeM% %ampm1% \u2022 %desc%<br>&nbsp;Current Temp: %temp% \u2022 Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% \u2022 Sunset: %sunset%",
+  weatherFormat1: "%desc% \u2022 Current Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\n",
+  weatherFormat2: "%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%\xB0C \u2022 Feels Like: %feels%\xB0C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% \u2022 Sunset: %sunset%\n",
+  weatherFormat3: "%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% \u2022 %timeH2%:%timeM% %ampm1% \u2022 %desc%<br>&nbsp;Recorded Temp: %temp% \u2022 Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% \u2022 Sunset: %sunset%",
+  weatherFormat4: "%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% \u2022 %timeH2%:%timeM% %ampm1% \u2022 %desc%<br>&nbsp;Current Temp: %temp% \u2022 Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% \u2022 Sunset: %sunset%",
   statusbarActive: true,
-  weatherStringSB: " | %desc% | Current Temp: %temp%\xB0C | Feels Like: %feels%\xB0C | ",
+  weatherFormatSB: " | %desc% | Current Temp: %temp%\xB0C | Feels Like: %feels%\xB0C | ",
   statusbarUpdateFreq: "15"
 };
 var FormatWeather = class {
-  constructor(location, latitude, longitude, key, units, language, format) {
-    this.location = location;
+  constructor(location2, latitude, longitude, key, units, language, format) {
+    this.location = location2;
     this.latitude = latitude;
     this.longitude = longitude;
     this.key = key;
@@ -56,335 +398,19 @@ var FormatWeather = class {
     this.format = format;
   }
   async getWeather() {
-    let weatherData;
-    let weatherString;
-    let aqiNumber;
-    let aqiString;
-    let url;
-    let urlAQI;
-    if (this.latitude.length > 0 && this.longitude.length > 0) {
-      url = `https://api.openweathermap.org/data/2.5/weather?lat=${this.latitude}&lon=${this.longitude}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
-    } else {
-      url = `https://api.openweathermap.org/data/2.5/weather?q=${this.location}&lang=${this.language}&appid=${this.key}&units=${this.units}`;
-    }
-    ;
-    let req = await fetch(url);
-    let json = await req.json();
-    if (json.cod != 200) {
-      weatherString = "Error Code " + json.cod + ": " + json.message;
-      return weatherString;
-    }
-    ;
-    urlAQI = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${this.latitude}&lon=${this.longitude}&appid=${this.key}`;
-    if (this.latitude.length > 0 && this.longitude.length > 0 && this.key.length > 0) {
-      let reqAQI = await fetch(urlAQI);
-      let jsonAQI = await reqAQI.json();
-      if (jsonAQI.cod) {
-        aqiNumber = 0;
-        aqiString = "Air Quality Index is Not Available";
-      } else {
-        const aqiStringsArr = ["Good", "Fair", "Moderate", "Poor", "Very Poor"];
-        aqiNumber = jsonAQI.list[0].main.aqi;
-        aqiString = aqiStringsArr[aqiNumber - 1];
-      }
-      ;
-    } else {
-      aqiNumber = 0;
-      aqiString = "Air Quality Index is Not Available";
-    }
-    ;
-    let conditions = json.weather[0].description;
-    let id = json.weather[0].id;
-    let conditionsEm = "";
-    if (id > 199 && id < 300) {
-      conditionsEm = "\u26C8\uFE0F";
-    }
-    if (id > 299 && id < 500) {
-      conditionsEm = "\u{1F326}\uFE0F";
-    }
-    if (id > 499 && id < 600) {
-      conditionsEm = "\u{1F327}\uFE0F";
-    }
-    if (id > 599 && id < 700) {
-      conditionsEm = "\u2744\uFE0F";
-    }
-    if (id > 699 && id < 800) {
-      conditionsEm = "\u{1F32B}\uFE0F";
-    }
-    if (id == 771) {
-      conditionsEm = "\u{1F300}";
-    }
-    if (id == 781) {
-      conditionsEm = "\u{1F32A}\uFE0F";
-    }
-    if (id == 800) {
-      conditionsEm = "\u{1F506}";
-    }
-    if (id > 800 && id < 804) {
-      conditionsEm = "\u{1F325}\uFE0F";
-    }
-    if (id == 804) {
-      conditionsEm = "\u2601\uFE0F";
-    }
-    conditions = conditions.replace(/^\w|\s\w/g, (c2) => c2.toUpperCase());
-    let iconName = json.weather[0].icon;
-    const iconApi = await fetch("http://openweathermap.org/img/w/" + iconName + ".png");
-    let iconUrl = iconApi.url;
-    let temp = json.main.temp;
-    temp = Math.round(temp);
-    let feelsLike = json.main.feels_like;
-    feelsLike = Math.round(feelsLike);
-    let tempMin = json.main.temp_min;
-    tempMin = Math.round(tempMin);
-    let tempMax = json.main.temp_max;
-    tempMax = Math.round(tempMax);
-    let pressure = json.main.pressure;
-    let humidity = json.main.humidity;
-    let seaLevel = json.main.sea_level;
-    let groundLevel = json.main.grnd_level;
-    let visibility = json.visibility;
-    let windSpeed = json.wind.speed;
-    let windSpeedms = json.wind.speed;
-    if (this.units == "metric") {
-      windSpeed = Math.round(windSpeed * 3.6);
-      windSpeedms = Math.round(windSpeedms);
-    } else {
-      windSpeed = Math.round(windSpeed);
-    }
-    let windDirection = json.wind.deg;
-    windDirection = this.getCardinalDirection(windDirection);
-    let windGust = json.wind.gust;
-    if (windGust != void 0) {
-      if (this.units == "metric") {
-        windGust = Math.round(windGust * 3.6);
-      } else {
-        windGust = Math.round(windGust);
-      }
-    } else {
-      windGust = "N/A";
-    }
-    let clouds = json.clouds.all;
-    let rain1h;
-    let rain3h;
-    let snow1h;
-    let snow3h;
-    let precipitation1h;
-    let precipitation3h;
-    if (json.rain != void 0) {
-      let rainObj = json.rain;
-      let keys = Object.keys(rainObj);
-      let values = Object.values(rainObj);
-      if (keys[0] === "1h") {
-        rain1h = values[0];
-      } else if (keys[0] === "3h") {
-        rain3h = values[0];
-      }
-      if (keys.length > 1) {
-        if (keys[1] === "1h") {
-          rain1h = values[1];
-        } else if (keys[1] === "3h") {
-          rain3h = values[1];
-        }
-      }
-    } else {
-      rain1h = 0;
-      rain3h = 0;
-    }
-    if (rain1h === void 0) {
-      rain1h = 0;
-    }
-    ;
-    if (rain3h === void 0) {
-      rain3h = 0;
-    }
-    ;
-    if (json.snow != void 0) {
-      let snowObj = json.snow;
-      let keys = Object.keys(snowObj);
-      let values = Object.values(snowObj);
-      if (keys[0] === "1h") {
-        snow1h = values[0];
-      } else if (keys[0] === "3h") {
-        snow3h = values[0];
-      }
-      if (keys.length > 1) {
-        if (keys[1] === "1h") {
-          snow1h = values[1];
-        } else if (keys[1] === "3h") {
-          snow3h = values[1];
-        }
-      }
-    } else {
-      snow1h = 0;
-      snow3h = 0;
-    }
-    if (snow1h === void 0) {
-      snow1h = 0;
-    }
-    ;
-    if (snow3h === void 0) {
-      snow3h = 0;
-    }
-    ;
-    precipitation1h = rain1h || snow1h;
-    precipitation3h = rain3h || snow3h;
-    let dt = json.dt;
-    let a = new Date(dt * 1e3);
-    const months1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
-    const months2 = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-    const months3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const months4 = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    let year1 = a.getFullYear();
-    let year2str = String(year1).slice(-2);
-    let year2 = Number(year2str);
-    let month1 = months1[a.getMonth()];
-    let month2 = months2[a.getMonth()];
-    let month3 = months3[a.getMonth()];
-    let month4 = months4[a.getMonth()];
-    let date1 = a.getDate();
-    let date2 = a.getDate() < 10 ? "0" + a.getDate() : a.getDate();
-    let ampm1 = "AM";
-    let ampm2 = "am";
-    if (a.getHours() > 11) {
-      ampm1 = "PM";
-      ampm2 = "pm";
-    }
-    let hour1 = a.getHours();
-    let hour2 = a.getHours();
-    if (a.getHours() > 12) {
-      hour2 = a.getHours() - 12;
-    }
-    if (a.getHours() == 0) {
-      hour1 = 12;
-      hour2 = 12;
-    }
-    let min = a.getMinutes() < 10 ? "0" + a.getMinutes() : a.getMinutes();
-    let sec = a.getSeconds() < 10 ? "0" + a.getSeconds() : a.getSeconds();
-    let sr = json.sys.sunrise;
-    let b = new Date(sr * 1e3);
-    let srhour = b.getHours() < 10 ? "0" + b.getHours() : b.getHours();
-    let srmin = b.getMinutes() < 10 ? "0" + b.getMinutes() : b.getMinutes();
-    let srsec = b.getSeconds() < 10 ? "0" + b.getSeconds() : b.getSeconds();
-    let sunrise = srhour + ":" + srmin + ":" + srsec;
-    let ss = json.sys.sunset;
-    let c = new Date(ss * 1e3);
-    let sshour = c.getHours() < 10 ? "0" + c.getHours() : c.getHours();
-    let ssmin = c.getMinutes() < 10 ? "0" + c.getMinutes() : c.getMinutes();
-    let sssec = c.getSeconds() < 10 ? "0" + c.getSeconds() : c.getSeconds();
-    let sunset = sshour + ":" + ssmin + ":" + sssec;
-    let name = json.name;
-    let latitude = json.coord.lat;
-    let longitude = json.coord.lon;
-    weatherData = {
-      "status": "ok",
-      "conditions": conditions,
-      "conditionsEm": conditionsEm,
-      "icon": iconUrl,
-      "temp": temp,
-      "feelsLike": feelsLike,
-      "tempMin": tempMin,
-      "tempMax": tempMax,
-      "pressure": pressure,
-      "humidity": humidity,
-      "seaLevel": seaLevel,
-      "groundLevel": groundLevel,
-      "visibility": visibility,
-      "windSpeed": windSpeed,
-      "windSpeedms": windSpeedms,
-      "windDirection": windDirection,
-      "windGust": windGust,
-      "clouds": clouds,
-      "rain1h": rain1h,
-      "rain3h": rain3h,
-      "snow1h": snow1h,
-      "snow3h": snow3h,
-      "precipitation1h": precipitation1h,
-      "precipitation3h": precipitation3h,
-      "year1": year1,
-      "year2": year2,
-      "month1": month1,
-      "month2": month2,
-      "month3": month3,
-      "month4": month4,
-      "date1": date1,
-      "date2": date2,
-      "ampm1": ampm1,
-      "ampm2": ampm2,
-      "hour1": hour1,
-      "hour2": hour2,
-      "min": min,
-      "sec": sec,
-      "sunrise": sunrise,
-      "sunset": sunset,
-      "name": name,
-      "latitude": latitude,
-      "longitude": longitude,
-      "aqiNum": aqiNumber,
-      "aqiStr": aqiString
-    };
-    weatherString = this.format.replace(/%desc%/gmi, weatherData.conditions);
-    weatherString = weatherString.replace(/%desc-em%/gmi, weatherData.conditionsEm);
-    weatherString = weatherString.replace(/%icon%/gmi, `<img src=${weatherData.icon} />`);
-    weatherString = weatherString.replace(/%temp%/gmi, weatherData.temp);
-    weatherString = weatherString.replace(/%feels%/gmi, weatherData.feelsLike);
-    weatherString = weatherString.replace(/%tempmin%/gmi, weatherData.tempMin);
-    weatherString = weatherString.replace(/%tempmax%/gmi, weatherData.tempMax);
-    weatherString = weatherString.replace(/%pressure%/gmi, weatherData.pressure);
-    weatherString = weatherString.replace(/%humidity%/gmi, weatherData.humidity);
-    weatherString = weatherString.replace(/%pressure-sl%/gmi, weatherData.seaLevel);
-    weatherString = weatherString.replace(/%pressure-gl%/gmi, weatherData.groundLevel);
-    weatherString = weatherString.replace(/%visibility%/gmi, weatherData.visibility);
-    weatherString = weatherString.replace(/%wind-speed%/gmi, weatherData.windSpeed);
-    weatherString = weatherString.replace(/%wind-speed-ms%/gmi, weatherData.windSpeedms);
-    weatherString = weatherString.replace(/%wind-dir%/gmi, weatherData.windDirection);
-    if (weatherData.windGust == "N/A") {
-      weatherString = weatherString.replace(/\^.+\^/gmi, "");
-    } else {
-      weatherString = weatherString.replace(/%wind-gust%/gmi, weatherData.windGust);
-      weatherString = weatherString.replace(/\^(.+)\^/gmi, "$1");
-    }
-    weatherString = weatherString.replace(/%clouds%/gmi, `${weatherData.clouds}`);
-    weatherString = weatherString.replace(/%rain1h%/gmi, `${weatherData.rain1h}`);
-    weatherString = weatherString.replace(/%rain3h%/gmi, `${weatherData.rain3h}`);
-    weatherString = weatherString.replace(/%snow1h%/gmi, `${weatherData.snow1h}`);
-    weatherString = weatherString.replace(/%snow3h%/gmi, `${weatherData.snow3h}`);
-    weatherString = weatherString.replace(/%precipitation1h%/gmi, `${weatherData.precipitation1h}`);
-    weatherString = weatherString.replace(/%precipitation3h%/gmi, `${weatherData.precipitation3h}`);
-    weatherString = weatherString.replace(/%dateYear1%/gmi, `${weatherData.year1}`);
-    weatherString = weatherString.replace(/%dateYear2%/gmi, `${weatherData.year2}`);
-    weatherString = weatherString.replace(/%dateMonth1%/gmi, `${weatherData.month1}`);
-    weatherString = weatherString.replace(/%dateMonth2%/gmi, `${weatherData.month2}`);
-    weatherString = weatherString.replace(/%dateMonth3%/gmi, `${weatherData.month3}`);
-    weatherString = weatherString.replace(/%dateMonth4%/gmi, `${weatherData.month4}`);
-    weatherString = weatherString.replace(/%dateDay1%/gmi, `${weatherData.date1}`);
-    weatherString = weatherString.replace(/%dateDay2%/gmi, `${weatherData.date2}`);
-    weatherString = weatherString.replace(/%ampm1%/gmi, `${weatherData.ampm1}`);
-    weatherString = weatherString.replace(/%ampm2%/gmi, `${weatherData.ampm2}`);
-    weatherString = weatherString.replace(/%timeH1%/gmi, `${weatherData.hour1}`);
-    weatherString = weatherString.replace(/%timeH2%/gmi, `${weatherData.hour2}`);
-    weatherString = weatherString.replace(/%timeM%/gmi, `${weatherData.min}`);
-    weatherString = weatherString.replace(/%timeS%/gmi, `${weatherData.sec}`);
-    weatherString = weatherString.replace(/%sunrise%/gmi, `${weatherData.sunrise}`);
-    weatherString = weatherString.replace(/%sunset%/gmi, `${weatherData.sunset}`);
-    weatherString = weatherString.replace(/%name%/gmi, `${weatherData.name}`);
-    weatherString = weatherString.replace(/%latitude%/gmi, `${weatherData.latitude}`);
-    weatherString = weatherString.replace(/%longitude%/gmi, `${weatherData.longitude}`);
-    weatherString = weatherString.replace(/%aqinumber%/gmi, `${weatherData.aqiNum}`);
-    weatherString = weatherString.replace(/%aqistring%/gmi, `${weatherData.aqiStr}`);
-    return weatherString;
+    let weatherStr = await getCurrentWeather(this.key, this.latitude, this.longitude, this.language, this.units, this.format);
+    let forecastWeatherStr = await getForecastWeather(this.key, this.latitude, this.longitude, this.language, this.units, this.format);
+    return weatherStr;
   }
   async getWeatherString() {
     try {
       let weatherString = await this.getWeather();
       return weatherString;
     } catch (error) {
-      let weatherString = "";
+      console.log("Error", error);
+      let weatherString = "Failed to fetch weather data";
       return weatherString;
     }
-  }
-  getCardinalDirection(angle) {
-    const directions = ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"];
-    return directions[Math.round(angle / 45) % 8];
   }
 };
 var OpenWeather = class extends import_obsidian.Plugin {
@@ -396,7 +422,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
         new import_obsidian.Notice("Open a Markdown file first.");
         return;
       }
-      new InsertWeatherPicker(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1, this.settings.weatherString2, this.settings.weatherString3, this.settings.weatherString4).open();
+      new InsertWeatherPicker(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1, this.settings.weatherFormat2, this.settings.weatherFormat3, this.settings.weatherFormat4).open();
     });
     this.statusBar = this.addStatusBarItem();
     if (this.settings.statusbarActive) {
@@ -408,7 +434,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherStringSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -423,9 +449,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
       id: "replace-template-string",
       name: "Replace template strings",
       editorCallback: async (editor, view) => {
-        if (this.settings.weatherString1.length > 0) {
+        if (this.settings.weatherFormat1.length > 0) {
           if (view.data.contains("%weather1%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
+            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -435,9 +461,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
             editor.setValue(doc);
           }
         }
-        if (this.settings.weatherString2.length > 0) {
+        if (this.settings.weatherFormat2.length > 0) {
           if (view.data.contains("%weather2%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
+            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -447,9 +473,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
             editor.setValue(doc);
           }
         }
-        if (this.settings.weatherString3.length > 0) {
+        if (this.settings.weatherFormat3.length > 0) {
           if (view.data.contains("%weather3%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
+            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -459,9 +485,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
             editor.setValue(doc);
           }
         }
-        if (this.settings.weatherString4.length > 0) {
+        if (this.settings.weatherFormat4.length > 0) {
           if (view.data.contains("%weather4%")) {
-            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
+            let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
             let weatherStr = await wstr.getWeatherString();
             if (weatherStr.length == 0) {
               return;
@@ -477,8 +503,8 @@ var OpenWeather = class extends import_obsidian.Plugin {
       id: "insert-string-one",
       name: "Insert weather string one",
       editorCallback: async (editor, view) => {
-        if (this.settings.weatherString1.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
+        if (this.settings.weatherFormat1.length > 0) {
+          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -494,8 +520,8 @@ var OpenWeather = class extends import_obsidian.Plugin {
       id: "insert-string-two",
       name: "Insert weather string two",
       editorCallback: async (editor, view) => {
-        if (this.settings.weatherString2.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
+        if (this.settings.weatherFormat2.length > 0) {
+          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -511,8 +537,8 @@ var OpenWeather = class extends import_obsidian.Plugin {
       id: "insert-string-three",
       name: "Insert weather string three",
       editorCallback: async (editor, view) => {
-        if (this.settings.weatherString3.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
+        if (this.settings.weatherFormat3.length > 0) {
+          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -528,8 +554,8 @@ var OpenWeather = class extends import_obsidian.Plugin {
       id: "insert-string-four",
       name: "Insert weather string four",
       editorCallback: async (editor, view) => {
-        if (this.settings.weatherString4.length > 0) {
-          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
+        if (this.settings.weatherFormat4.length > 0) {
+          let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length == 0) {
             return;
@@ -541,7 +567,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
         }
       }
     });
-    this.addSettingTab(new OpenWeatherSettingsTab(this.app, this));
+    this.addSettingTab(new OpenWeatherSettingsTab(this.app, this, this.settings));
     this.registerEvent(this.app.workspace.on("file-open", async (file) => {
       if (file) {
         await new Promise((r) => setTimeout(r, 2e3));
@@ -568,7 +594,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
       return;
     if (document.getElementsByClassName("weather_current_1").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_1")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
+      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
       let weatherStr = await wstr.getWeatherString();
       if (weatherStr.length == 0) {
         return;
@@ -578,7 +604,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (document.getElementsByClassName("weather_current_2").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_2")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
+      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
       let weatherStr = await wstr.getWeatherString();
       if (weatherStr.length == 0) {
         return;
@@ -588,13 +614,13 @@ var OpenWeather = class extends import_obsidian.Plugin {
     }
     if (document.getElementsByClassName("weather_current_3").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_3")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
+      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
       let weatherStr = await wstr.getWeatherString();
       divEl.innerHTML = weatherStr;
     }
     if (document.getElementsByClassName("weather_current_4").length === 1) {
       const divEl = document.getElementsByClassName("weather_current_4")[0];
-      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
+      let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
       let weatherStr = await wstr.getWeatherString();
       if (weatherStr.length == 0) {
         return;
@@ -613,9 +639,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
     let editor = view.getViewData();
     if (editor == null)
       return;
-    if (this.settings.weatherString1.length > 0) {
+    if (this.settings.weatherFormat1.length > 0) {
       if (editor.contains("%weather1%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString1);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat1);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -625,9 +651,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
         file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
-    if (this.settings.weatherString2.length > 0) {
+    if (this.settings.weatherFormat2.length > 0) {
       if (editor.contains("%weather2%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString2);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat2);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -637,9 +663,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
         file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
-    if (this.settings.weatherString3.length > 0) {
+    if (this.settings.weatherFormat3.length > 0) {
       if (editor.contains("%weather3%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString3);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat3);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -649,9 +675,9 @@ var OpenWeather = class extends import_obsidian.Plugin {
         file == null ? void 0 : file.vault.modify(file, editor);
       }
     }
-    if (this.settings.weatherString4.length > 0) {
+    if (this.settings.weatherFormat4.length > 0) {
       if (editor.contains("%weather4%")) {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherString4);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormat4);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -671,7 +697,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
           displayErrorMsg = false;
         }
       } else {
-        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherStringSB);
+        let wstr = new FormatWeather(this.settings.location, this.settings.latitude, this.settings.longitude, this.settings.key, this.settings.units, this.settings.language, this.settings.weatherFormatSB);
         let weatherStr = await wstr.getWeatherString();
         if (weatherStr.length == 0) {
           return;
@@ -691,7 +717,7 @@ var OpenWeather = class extends import_obsidian.Plugin {
   async saveSettings() {
     await this.saveData(this.settings);
   }
-  async onPick(picked) {
+  async onPick(picked, settings) {
     let name = picked.name;
     let lat = picked.lat;
     let lon = picked.lon;
@@ -725,18 +751,18 @@ var OpenWeather = class extends import_obsidian.Plugin {
 };
 var ALL_COMMANDS = [];
 var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
-  constructor(location, latitude, longitude, key, units, language, weatherString1, weatherString2, weatherString3, weatherString4) {
+  constructor(location2, latitude, longitude, key, units, language, weatherFormat1, weatherFormat2, weatherFormat3, weatherFormat4) {
     super(app);
-    this.location = location;
+    this.location = location2;
     this.latitude = latitude;
     this.longitude = longitude;
     this.key = key;
     this.units = units;
     this.language = language;
-    this.weatherString1 = weatherString1;
-    this.weatherString2 = weatherString2;
-    this.weatherString3 = weatherString3;
-    this.weatherString4 = weatherString4;
+    this.weatherFormat1 = weatherFormat1;
+    this.weatherFormat2 = weatherFormat2;
+    this.weatherFormat3 = weatherFormat3;
+    this.weatherFormat4 = weatherFormat4;
   }
   async getSuggestions(query) {
     ALL_COMMANDS = [];
@@ -744,47 +770,47 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
     if ((view == null ? void 0 : view.getViewType()) === "markdown") {
       const md = view;
       if (md.getMode() === "source") {
-        if (this.weatherString1.length > 0) {
-          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString1);
+        if (this.weatherFormat1.length > 0) {
+          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat1);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherString1 = weatherStr;
-            ALL_COMMANDS.push({ command: "Insert Weather String - 1", format: this.weatherString1 });
+            this.weatherFormat1 = weatherStr;
+            ALL_COMMANDS.push({ command: "Insert Weather String - 1", format: this.weatherFormat1 });
           } else {
-            this.weatherString1 = "";
+            this.weatherFormat1 = "";
             return ALL_COMMANDS.filter((command) => command.command.toLowerCase().includes(query.toLowerCase()));
           }
         }
-        if (this.weatherString2.length > 0) {
-          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString2);
+        if (this.weatherFormat2.length > 0) {
+          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat2);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherString2 = weatherStr;
-            ALL_COMMANDS.push({ command: "Insert Weather String - 2", format: this.weatherString2 });
+            this.weatherFormat2 = weatherStr;
+            ALL_COMMANDS.push({ command: "Insert Weather String - 2", format: this.weatherFormat2 });
           } else {
-            this.weatherString2 = "";
+            this.weatherFormat2 = "";
             return ALL_COMMANDS.filter((command) => command.command.toLowerCase().includes(query.toLowerCase()));
           }
         }
-        if (this.weatherString3.length > 0) {
-          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString3);
+        if (this.weatherFormat3.length > 0) {
+          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat3);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherString3 = weatherStr;
-            ALL_COMMANDS.push({ command: "Insert Weather String - 3", format: this.weatherString3 });
+            this.weatherFormat3 = weatherStr;
+            ALL_COMMANDS.push({ command: "Insert Weather String - 3", format: this.weatherFormat3 });
           } else {
-            this.weatherString3 = "";
+            this.weatherFormat3 = "";
             return ALL_COMMANDS.filter((command) => command.command.toLowerCase().includes(query.toLowerCase()));
           }
         }
-        if (this.weatherString4.length > 0) {
-          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherString4);
+        if (this.weatherFormat4.length > 0) {
+          let wstr = new FormatWeather(this.location, this.latitude, this.longitude, this.key, this.units, this.language, this.weatherFormat4);
           let weatherStr = await wstr.getWeatherString();
           if (weatherStr.length > 0) {
-            this.weatherString4 = weatherStr;
-            ALL_COMMANDS.push({ command: "Insert Weather String - 4", format: this.weatherString4 });
+            this.weatherFormat4 = weatherStr;
+            ALL_COMMANDS.push({ command: "Insert Weather String - 4", format: this.weatherFormat4 });
           } else {
-            this.weatherString4 = "";
+            this.weatherFormat4 = "";
             return ALL_COMMANDS.filter((command) => command.command.toLowerCase().includes(query.toLowerCase()));
           }
         }
@@ -811,27 +837,27 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
     if (editor == null)
       return;
     if (command.command == "Replace Template Strings") {
-      if (this.weatherString1.length > 0) {
-        editor = editor.replace(/%weather1%/gmi, this.weatherString1);
+      if (this.weatherFormat1.length > 0) {
+        editor = editor.replace(/%weather1%/gmi, this.weatherFormat1);
         view.setViewData(editor, false);
         file == null ? void 0 : file.vault.modify(file, editor);
       } else {
         return;
       }
-      if (this.weatherString2.length > 0) {
-        editor = editor.replace(/%weather2%/gmi, this.weatherString2);
+      if (this.weatherFormat2.length > 0) {
+        editor = editor.replace(/%weather2%/gmi, this.weatherFormat2);
         file == null ? void 0 : file.vault.modify(file, editor);
       } else {
         return;
       }
-      if (this.weatherString3.length > 0) {
-        editor = editor.replace(/%weather3%/gmi, this.weatherString3);
+      if (this.weatherFormat3.length > 0) {
+        editor = editor.replace(/%weather3%/gmi, this.weatherFormat3);
         file == null ? void 0 : file.vault.modify(file, editor);
       } else {
         return;
       }
-      if (this.weatherString4.length > 0) {
-        editor = editor.replace(/%weather4%/gmi, this.weatherString4);
+      if (this.weatherFormat4.length > 0) {
+        editor = editor.replace(/%weather4%/gmi, this.weatherFormat4);
         file == null ? void 0 : file.vault.modify(file, editor);
       } else {
         return;
@@ -843,9 +869,10 @@ var InsertWeatherPicker = class extends import_obsidian.SuggestModal {
 };
 var ALL_CITY_COMMANDS = [];
 var CitySearchResultPicker = class extends import_obsidian.SuggestModal {
-  constructor(json) {
+  constructor(json, settings) {
     super(app);
     this.json = json;
+    this.settings = settings;
   }
   async getSuggestions(query) {
     ALL_CITY_COMMANDS = [];
@@ -881,13 +908,14 @@ var CitySearchResultPicker = class extends import_obsidian.SuggestModal {
       return;
     }
     ;
-    OpenWeather.prototype.onPick(command.selection);
+    OpenWeather.prototype.onPick(command.selection, this.settings);
   }
 };
 var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
-  constructor(app2, plugin) {
+  constructor(app2, plugin, settings) {
     super(app2, plugin);
     this.plugin = plugin;
+    this.settings = settings;
   }
   display() {
     const { containerEl } = this;
@@ -939,7 +967,7 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
           url = `https://api.openweathermap.org/geo/1.0/direct?q=${citySearch}&limit=5&appid=${key}`;
           let req = await fetch(url);
           let jsonCitiesObj = await req.json();
-          new CitySearchResultPicker(jsonCitiesObj).open();
+          new CitySearchResultPicker(jsonCitiesObj, this.settings).open();
         }
       });
     });
@@ -1034,32 +1062,32 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
     });
     containerEl.createEl("h2", { text: "Weather strings formatting (4 strings are available)" });
     new import_obsidian.Setting(containerEl).setName("Weather string 1").setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.").addTextArea((textArea) => {
-      textArea.setPlaceholder("Weather string 1").setValue(this.plugin.settings.weatherString1).onChange(async (value) => {
-        this.plugin.settings.weatherString1 = value;
+      textArea.setPlaceholder("Weather string 1").setValue(this.plugin.settings.weatherFormat1).onChange(async (value) => {
+        this.plugin.settings.weatherFormat1 = value;
         await this.plugin.saveSettings();
       });
       textArea.inputEl.setAttr("rows", 10);
       textArea.inputEl.setAttr("cols", 60);
     });
     new import_obsidian.Setting(containerEl).setName("Weather string 2").setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.").addTextArea((textArea) => {
-      textArea.setPlaceholder("Weather string 2").setValue(this.plugin.settings.weatherString2).onChange(async (value) => {
-        this.plugin.settings.weatherString2 = value;
+      textArea.setPlaceholder("Weather string 2").setValue(this.plugin.settings.weatherFormat2).onChange(async (value) => {
+        this.plugin.settings.weatherFormat2 = value;
         await this.plugin.saveSettings();
       });
       textArea.inputEl.setAttr("rows", 10);
       textArea.inputEl.setAttr("cols", 60);
     });
     new import_obsidian.Setting(containerEl).setName("Weather string 3").setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.").addTextArea((textArea) => {
-      textArea.setPlaceholder("Weather string 3").setValue(this.plugin.settings.weatherString3).onChange(async (value) => {
-        this.plugin.settings.weatherString3 = value;
+      textArea.setPlaceholder("Weather string 3").setValue(this.plugin.settings.weatherFormat3).onChange(async (value) => {
+        this.plugin.settings.weatherFormat3 = value;
         await this.plugin.saveSettings();
       });
       textArea.inputEl.setAttr("rows", 10);
       textArea.inputEl.setAttr("cols", 60);
     });
     new import_obsidian.Setting(containerEl).setName("Weather string 4").setDesc("Feel free to change this to whatever you like. See the README.md on Github for all available macros.").addTextArea((textArea) => {
-      textArea.setPlaceholder("Weather string 4").setValue(this.plugin.settings.weatherString4).onChange(async (value) => {
-        this.plugin.settings.weatherString4 = value;
+      textArea.setPlaceholder("Weather string 4").setValue(this.plugin.settings.weatherFormat4).onChange(async (value) => {
+        this.plugin.settings.weatherFormat4 = value;
         await this.plugin.saveSettings();
       });
       textArea.inputEl.setAttr("rows", 10);
@@ -1073,8 +1101,8 @@ var OpenWeatherSettingsTab = class extends import_obsidian.PluginSettingTab {
         await this.plugin.updateWeather();
       }));
       new import_obsidian.Setting(containerEl).setName("Weather string format statusbar").setDesc("Weather string format for the statusbar").addTextArea((textArea) => {
-        textArea.setPlaceholder("Statusbar Weather Format").setValue(this.plugin.settings.weatherStringSB).onChange(async (value) => {
-          this.plugin.settings.weatherStringSB = value;
+        textArea.setPlaceholder("Statusbar Weather Format").setValue(this.plugin.settings.weatherFormatSB).onChange(async (value) => {
+          this.plugin.settings.weatherFormatSB = value;
           await this.plugin.saveSettings();
           await this.plugin.updateWeather();
         });

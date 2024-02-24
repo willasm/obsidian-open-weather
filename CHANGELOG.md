@@ -1,6 +1,12 @@
 # Change Log
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
+## [1.7.1] 2024-02-24
+### Fixed
+- String settings names were named incorrectly (This effectively reset your defined strings to defaults)
+  - The original edited strings are still in the data file, this fix just points back to them
+  - This only affects anyone who had changed the default strings
+
 ## [1.7.0] 2024-02-18
 ### Added
 - Settings for Latitude and Longitude
