@@ -104,6 +104,7 @@ These macros contained within the weather string will be replaced with the appro
 - Weather Description Text `%desc%`
 - Weather Description Emoji `%desc-em%`
 - Weather Icon `%icon%` - See note below
+- Weather Icon Double sized `%icon2x%` - See note below
 - Current Temperature `%temp%`
 - Feels Like `%feels%`
 - Temperature Min `%tempmin%`
@@ -148,7 +149,7 @@ These macros contained within the weather string will be replaced with the appro
   - sec `%timeS%` - 05
 
 - ### Weather Placeholder notes
-  - `%Icon%` - This is replaced with the image tag `<img src={Icon Url} />` This is more useful if it is embedded inside a [div](#div-support) code block.
+  - `%icon%` and `%icon2x%` - This is replaced with the image tag `<img src={Icon Url} />` This is more useful if it is embedded inside a [div](#div-support) code block.
 
   - `%wind-gust%` This data is only returned by the API if the condition exists. To make this display the string data only when it exists you can surround it with the caret symbols.
 

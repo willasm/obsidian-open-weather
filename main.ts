@@ -64,13 +64,9 @@ class FormatWeather {
   
   // • getWeather - Get the weather data from the OpenWeather API • 
   async getWeather():Promise<any> {
-//    await getAQI(this.key, this.latitude, this.longitude);
-//    console.log('aqiString:', aqiString);
-//    console.log('aqiNumber:', aqiNumber);
     let weatherStr = await getCurrentWeather(this.key, this.latitude, this.longitude, this.language, this.units, this.format);
-    let forecastWeatherStr = await getForecastWeather(this.key, this.latitude, this.longitude, this.language, this.units, this.format);
-//    console.log('weatherStr:', weatherStr);
-    return(weatherStr);
+    let forecastWeatherStr = await getForecastWeather(this.key, this.latitude, this.longitude, this.language, this.units, weatherStr);
+    return(forecastWeatherStr);
   }
 
   // • getWeatherString - Returns a formatted weather string • 
@@ -79,7 +75,6 @@ class FormatWeather {
       let weatherString = await this.getWeather();
       return weatherString;
     } catch (error) {
-      //new Notice("Failed to fetch weather data\n"+error,5000);
       console.log('Error',error);
       let weatherString = "Failed to fetch weather data";
       return weatherString;
@@ -668,8 +663,6 @@ class CitySearchResultPicker extends SuggestModal<CommandsCity> implements CityS
   onChooseSuggestion(command: CommandsCity, evt: MouseEvent | KeyboardEvent) {
     if (command.index == 9999) {return};    // User selected retry
     OpenWeather.prototype.onPick(command.selection,this.settings);
-    //return(command.selection);
-    //console.log('Settings', this.settings.location);
   }
 };
 

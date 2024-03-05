@@ -38,43 +38,46 @@ export default async function getCurrentWeather(key:any, latitude:any, longitude
     return weatherString;
   };
 
+  // • Get Current Weather Data We Want • 
   let conditions = json.weather[0].description;
   let id = json.weather[0].id;
   let conditionsEm = '';
   if (id > 199 && id < 300) {
     conditionsEm = '⛈️';
-  }
+  };
   if (id > 299 && id < 500) {
     conditionsEm = '🌦️';
-  }
+  };
   if (id > 499 && id < 600) {
     conditionsEm = '🌧️';
-  }
+  };
   if (id > 599 && id < 700) {
     conditionsEm = '❄️';
-  }
+  };
   if (id > 699 && id < 800) {
     conditionsEm = '🌫️';
-  }
+  };
   if (id == 771) {
     conditionsEm = '🌀';
-  }
+  };
   if (id == 781) {
     conditionsEm = '🌪️';
-  }
+  };
   if (id == 800) {
     conditionsEm = '🔆';
-  }
+  };
   if (id > 800 && id < 804) {
     conditionsEm = '🌥️';
-  }
+  };
   if (id == 804) {
     conditionsEm = '☁️';
-  }
+  };
   conditions = conditions.replace(/^\w|\s\w/g, (c: string) => c.toUpperCase());
   let iconName = json.weather[0].icon;
-  const iconApi = await fetch('http://openweathermap.org/img/w/' + iconName + '.png');
+  const iconApi = await fetch('https://openweathermap.org/img/wn/' + iconName + '.png');
   let iconUrl = iconApi.url;
+  const iconApi2x = await fetch('https://openweathermap.org/img/wn/' + iconName + '@2x.png');
+  let iconUrl2x = iconApi2x.url;
   let temp = json.main.temp;
   temp = Math.round(temp);
   let feelsLike = json.main.feels_like;
@@ -227,6 +230,7 @@ export default async function getCurrentWeather(key:any, latitude:any, longitude
     "conditions": conditions,
     "conditionsEm": conditionsEm,
     "icon": iconUrl,
+    "icon2x": iconUrl2x,
     "temp": temp,
     "feelsLike": feelsLike,
     "tempMin": tempMin,
@@ -274,6 +278,7 @@ export default async function getCurrentWeather(key:any, latitude:any, longitude
   weatherString = format.replace(/%desc%/gmi, weatherData.conditions);
   weatherString = weatherString.replace(/%desc-em%/gmi, weatherData.conditionsEm);
   weatherString = weatherString.replace(/%icon%/gmi, `<img src=${weatherData.icon} />`);
+  weatherString = weatherString.replace(/%icon2x%/gmi, `<img src=${weatherData.icon} />`);
   weatherString = weatherString.replace(/%temp%/gmi, weatherData.temp);
   weatherString = weatherString.replace(/%feels%/gmi, weatherData.feelsLike);
   weatherString = weatherString.replace(/%tempmin%/gmi, weatherData.tempMin);
