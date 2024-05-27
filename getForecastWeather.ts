@@ -39,7 +39,7 @@ export default async function getForecastWeather(key:any, latitude:any, longitud
   };
   let req = await fetch(url);
   let json = await req.json();
-  console.log('json:', json);
+  //console.log('json:', json);
   if (json.cod != 200) {
     weatherString = "Error Code "+json.cod+": "+json.message;
     return weatherString;
@@ -227,7 +227,7 @@ export default async function getForecastWeather(key:any, latitude:any, longitud
     listForecasts.push(forecastObj);
 
   };
-  console.log('listForecasts:', listForecasts);
+  //console.log('listForecasts:', listForecasts);
   // Build Next Time Slice Strings
   let next12 = listForecasts[0].ds_localtime+' - '+listForecasts[0].ts_localtime+' '+listForecasts[0].weather[0].descriptionem+' '+listForecasts[0].weather[0].description+' Temp: '+Math.round(listForecasts[0].main.temp)+' Feels Like: '+Math.round(listForecasts[0].main.feels_like)+'\n'+
   listForecasts[1].ds_localtime+' - '+listForecasts[1].ts_localtime+' '+listForecasts[1].weather[0].descriptionem+' '+listForecasts[1].weather[0].description+' Temp: '+Math.round(listForecasts[1].main.temp)+' Feels Like: '+Math.round(listForecasts[1].main.feels_like)+'\n'+
@@ -2992,7 +2992,7 @@ export default async function getForecastWeather(key:any, latitude:any, longitud
   };
     
     // getWeather - Create Formatted weather string 
-    let tempStr1 = format.replace(/%fyear_00%/gmi, weatherData.ftemp_00);
+    let tempStr1 = format.replace(/%fyear_00%/gmi, weatherData.fyear_00);
     tempStr1 = tempStr1.replace(/%fyear_01%/gmi, weatherData.fyear_01);
     tempStr1 = tempStr1.replace(/%fyear_02%/gmi, weatherData.fyear_02);
     tempStr1 = tempStr1.replace(/%fyear_03%/gmi, weatherData.fyear_03);

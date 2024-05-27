@@ -1,6 +1,17 @@
 # Change Log
 
 <!-- ## [v-inc] ${YEAR4}-${MONTHNUMBER}-${DATE} -->
+## [1.8.0] 2024-05-26
+### Added
+- 5 day forecast
+  - 33 new placeholders (Times 40 for each time slot - 1320 total)
+  - 3 complex placeholders `%next12%`, `%next24%`, and `%next48%`
+  - See the README.md files `Forecast Weather Placeholders` section for details
+### Updated
+- README.md
+  - Added the list of available placeholders
+  - Updated settings descriptions
+
 ## [1.7.1] 2024-02-24
 ### Fixed
 - String settings names were named incorrectly (This effectively reset your defined strings to defaults)
