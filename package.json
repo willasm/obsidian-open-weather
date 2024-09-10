@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-open-weather",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"description": "Returns weather information from OpenWeather API",
 	"main": "main.js",
 	"scripts": {

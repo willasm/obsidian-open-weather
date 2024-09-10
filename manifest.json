@@ -1,7 +1,7 @@
 {
 	"id": "open-weather",
 	"name": "OpenWeather",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"minAppVersion": "1.4.10",
 	"description": "This plugin returns the current weather from OpenWeather in a configurable string format.",
 	"author": "willasm",
