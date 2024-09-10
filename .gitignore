@@ -24,5 +24,10 @@ data.json
 # Project notes
 .pnotes
 
+# Project time tracker
+.vscode/time_log.json
+
 # Hotreload - For plugin Development
 .hotreload
+StartMonitoring.ps1
+monitor-log.txt

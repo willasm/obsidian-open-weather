@@ -1,5 +1,24 @@
 # OpenWeather Plugin for Obsidian
 
+> <span style="color:#fb3c4b; display: block; width: 100%; text-align: center;">IMPORTANT NOTICE - THIS PLUGIN IS NOW DISCONTINUED!</span>
+>
+> <span style="color:#03c24f; display: block; width: 100%; text-align: center;">(Continue reading though - I have good news to announce as well)</span>
+>
+>
+> <span style="color:#3fbeff;">Open Weather has discontinued API 2.5 on which this plugin is based. They do offer API 3.0 which is free, but it requires a credit card to subscribe to the API. I'm not interested in giving some company a way to automatically charge me for something in the future when/if they decide to. I'm pretty sure that would never actually happen, but I can say that I am positively sure it can not happen if they do not have my credit card info. Also if they did start charging the users of this plugin (around 10,000 users) for some unforseen reason, that would have a lot of people very unhappy with me and that would be unpleasant to say the least...</span>
+>
+> <span style="color:#3fbeff;">One other point is that there are enough differences between the two API's that it would basically require a complete re-write of the plugin which leads into my good news... I have very nearly completed a new weather plugin based on the [Visual Crossing Weather API](https://www.visualcrossing.com/weather-api). It is free to subscribe to and does not require anything other than your email address. You can [sign up here](https://www.visualcrossing.com/sign-up). It offers many great features that were not included with Open Weather. For example, 15 complete forecast days while Open Weather only had 5 and for 21 hours out of every 24, day 1 and 5 did not return the full data for those days. VCW API also returns hourly data for every one of those 15 days while OW only returns the data in 3 hour blocks. Other nice features that VCW API offers and OW API is missing is weather alerts, data is returned in local time rather than GMT (No conversions needed). The API documentation is also much better and it has an active support forum. Overall it is just a nicer API to work with.</span>
+>
+> <span style="color:#3fbeff;">If you want to try the new plugin now you can find the [Visual Crossing Weather plugin here](https://github.com/willasm/vc-weather). It has some big improvements over the old plugin. It now has 5 locations you can get the weather data for as opposed to just one. I have doubled the number of weather templates from 4 to 8. There are now 2 statusbar strings which can be cycled every 30 seconds. The defaults are the first one has info on todays weather, the second displays info for tommorows weather. Note while this is still a work in progress it has almost every feature working now (Two feature that I still want to add are not yet completed). The documentation is also basically non-existent at the moment although I do have the complete list of current macros created (nearly 4000 already) and it is displayed in an easy to read table format. I have uploaded the main.js file as well if you would like to do a manual install or you could use the BRAT plugin to do the work for you. Anyone willing to Beta test it would be a huge help if they could provide any feedback.</span>
+>
+> <span style="color:#ffbe41;">Please note that the API was supposed to be discontinued 3 weeks ago, but as right now it is still returnig data. This could stop at any time!!! It is fortunate that it has continued this long as it has given me the time to write the new plugin. I will request the removal of this plugin from community plugins list when the API stops working or I have added the new plugin to community plugins list.</span>
+>
+> <span style="color:#41ffeb;">Thank you to all the plugins users since its creation, William McKeever</span>
+> 
+
+
+
+
 ## Features
 - Display current weather in the statusbar
 - Insert current weather into your documents
@@ -150,8 +169,8 @@ These macros contained within the weather string will be replaced with the appro
   - month2 `%dateMonth2%` - 01
   - month3 `%dateMonth3%` - Jan
   - month4 `%dateMonth4%` - January
-  - date1 `%dateDay1%` - 02
-  - date2 `%dateDay2%` - 2
+  - date1 `%dateDay1%` - 2
+  - date2 `%dateDay2%` - 02
   - ampm1 `%ampm1%` - "AM"
   - ampm2 `%ampm2%` - "am"
   - hour1 `%timeH1%` - 23 (24 hour)

@@ -1,6 +1,9 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent, TAbstractFile, TFolder, SuggestModal, Platform } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TextAreaComponent, TAbstractFile, TFolder, SuggestModal, Platform, FileSystemAdapter } from 'obsidian';
 import getCurrentWeather from './getCurrentWeather';
 import getForecastWeather from './getForecastWeather';
+import * as fs from 'fs';
+import * as path from 'path';
+//const path = require('path');
 
 let displayErrorMsg = true;
 
@@ -31,8 +34,16 @@ const DEFAULT_SETTINGS: OpenWeatherSettings = {
   excludeFolder: '',
   weatherFormat1: '%desc% • Current Temp: %temp%°C • Feels Like: %feels%°C\n',
   weatherFormat2: '%name%: %dateMonth4% %dateDay2% - %timeH2%:%timeM% %ampm1%\nCurrent Temp: %temp%°C • Feels Like: %feels%°C\nWind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^\nSunrise: %sunrise% • Sunset: %sunset%\n',
-  weatherFormat3: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
-  weatherFormat4: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+  weatherFormat3: `%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%
+&nbsp;Recorded Temp: %temp% • Felt like: %feels%
+&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^
+&nbsp;Sunrise: %sunrise% • Sunset: %sunset%`,
+  weatherFormat4: `%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%
+&nbsp;Current Temp: %temp% • Feels like: %feels%
+&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^
+&nbsp;Sunrise: %sunrise% • Sunset: %sunset%`,
+//  weatherFormat3: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+//  weatherFormat4: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
   statusbarActive: true,
   weatherFormatSB: ' | %desc% | Current Temp: %temp%°C | Feels Like: %feels%°C | ',
   statusbarUpdateFreq: "15"
@@ -99,6 +110,45 @@ export default class OpenWeather extends Plugin {
 
     // onload - Load settings 
     await this.loadSettings();
+// weatherFormat3: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+// weatherFormat4: '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Current Temp: %temp% • Feels like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%',
+    if (this.settings.weatherFormat3 == '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%') {
+      this.settings.weatherFormat3 = `%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%  
+&nbsp;Recorded Temp: %temp% • Felt like: %feels%  
+&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^  
+&nbsp;Sunrise: %sunrise% • Sunset: %sunset%`;
+      await this.saveSettings();
+    };
+    if (this.settings.weatherFormat4 == '%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%<br>&nbsp;Recorded Temp: %temp% • Felt like: %feels%<br>&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^<br>&nbsp;Sunrise: %sunrise% • Sunset: %sunset%') {
+      this.settings.weatherFormat4 = `%icon%&nbsp;%dateMonth4% %dateDay2% %dateYear1% • %timeH2%:%timeM% %ampm1% • %desc%  
+&nbsp;Recorded Temp: %temp% • Felt like: %feels%  
+&nbsp;Wind: %wind-speed% km/h from the %wind-dir%^ with gusts up to %wind-gust% km/h^  
+&nbsp;Sunrise: %sunrise% • Sunset: %sunset%`;
+      await this.saveSettings();
+    };
+    let configDir = app.vault.configDir;
+    let dataJsonPath = "";
+    let dataJsonFilePath = "";
+    let adapter = app.vault.adapter;
+    if (adapter instanceof FileSystemAdapter) {
+      dataJsonPath = path.join(adapter.getBasePath(),configDir,'plugins','open-weather');
+      dataJsonFilePath = path.join(adapter.getBasePath(),configDir,'plugins','open-weather','data.json');
+    };
+    let dataJson = await JSON.parse(fs.readFileSync(dataJsonFilePath, 'utf-8'));
+    console.log('>>>>>>> TESTING\n');
+    //console.log('settings:\n', this.settings);
+    if (dataJson.weatherString1) {
+      fs.renameSync(dataJsonFilePath, path.join(dataJsonPath, 'data.json.bkp'));
+      delete dataJson.weatherString1
+      delete dataJson.weatherString2
+      delete dataJson.weatherString3
+      delete dataJson.weatherString4
+      delete dataJson.weatherStringSB
+      fs.writeFileSync(dataJsonFilePath, JSON.stringify(dataJson, null, 2));
+      await this.loadSettings();
+      await this.saveSettings();
+      //console.log('dataJson:\n', dataJson);
+    };
     //await this.onPick.bind(this, this.plugin, this.settings);
     //OpenWeather.prototype.onPick.bind(this.settings.location);
     //await this.onload.bind(this, this.plugin, this.settings);
